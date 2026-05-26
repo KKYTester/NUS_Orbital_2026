@@ -2,6 +2,8 @@ using CourtSmasherz;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -58,6 +60,7 @@ public static class CourtSmasherzSceneBuilder
         CreateSplitScreenCameras(p1.root.transform, p2.root.transform, ball.transform);
         CreateLighting();
         CreateHud(game, bridge);
+        CreateEventSystem();
 
         string scenePath = "Assets/CourtSmasherz/Scenes/CourtSmasherz3D.unity";
         System.IO.Directory.CreateDirectory("Assets/CourtSmasherz/Scenes");
@@ -160,8 +163,8 @@ public static class CourtSmasherzSceneBuilder
 
     private static void CreateSplitScreenCameras(Transform p1, Transform p2, Transform ball)
     {
-        CreatePlayerCamera("P1 Camera", p1, ball, new Rect(0f, 0f, 0.5f, 1f), new Vector3(-0.15f, 3.0f, -5.3f));
-        CreatePlayerCamera("P2 Camera", p2, ball, new Rect(0.5f, 0f, 0.5f, 1f), new Vector3(0.15f, 3.0f, -5.3f));
+        CreatePlayerCamera("P1 Camera", p1, ball, new Rect(0f, 0f, 0.5f, 1f), new Vector3(-1.75f, 4.35f, -6.45f));
+        CreatePlayerCamera("P2 Camera", p2, ball, new Rect(0.5f, 0f, 0.5f, 1f), new Vector3(1.75f, 4.35f, -6.45f));
     }
 
     private static void CreatePlayerCamera(string name, Transform followTarget, Transform lookTarget, Rect viewport, Vector3 offset)
@@ -169,7 +172,7 @@ public static class CourtSmasherzSceneBuilder
         GameObject cameraObject = new GameObject(name);
         Camera camera = cameraObject.AddComponent<Camera>();
         camera.rect = viewport;
-        camera.fieldOfView = 54f;
+        camera.fieldOfView = 60f;
         camera.nearClipPlane = 0.05f;
         camera.clearFlags = CameraClearFlags.SolidColor;
         camera.backgroundColor = new Color(0.04f, 0.07f, 0.07f);
@@ -192,6 +195,13 @@ public static class CourtSmasherzSceneBuilder
         RenderSettings.ambientLight = new Color(0.45f, 0.5f, 0.52f);
     }
 
+    private static void CreateEventSystem()
+    {
+        GameObject eventSystemObject = new GameObject("EventSystem");
+        eventSystemObject.AddComponent<EventSystem>();
+        eventSystemObject.AddComponent<InputSystemUIInputModule>();
+    }
+
     private static void CreateHud(CourtSmasherzGameManager game, PhoneMotionHttpBridge bridge)
     {
         GameObject canvasObject = new GameObject("HUD Canvas");
@@ -201,13 +211,123 @@ public static class CourtSmasherzSceneBuilder
         canvasObject.AddComponent<GraphicRaycaster>();
 
         Text score = CreateText("Score Text", canvasObject.transform, new Vector2(0f, -32f), 34, TextAnchor.UpperCenter);
-        Text status = CreateText("Status Text", canvasObject.transform, new Vector2(0f, -76f), 18, TextAnchor.UpperCenter);
+        Text status = CreateBottomText("Status Text", canvasObject.transform, new Vector2(0f, 36f), 18, TextAnchor.LowerCenter);
         Text room = CreateText("Room Code Text", canvasObject.transform, new Vector2(0f, -112f), 22, TextAnchor.UpperCenter);
         Text bridgeStatus = CreateText("Bridge Status Text", canvasObject.transform, new Vector2(0f, -146f), 16, TextAnchor.UpperCenter);
+        Text p1Motion = CreatePlayerMotionText("P1 Motion Status Text", canvasObject.transform, new Vector2(0.25f, 0.18f), new Vector2(0.5f, 0.18f), TextAnchor.MiddleCenter, new Color(1f, 0.86f, 0.38f));
+        Text p2Motion = CreatePlayerMotionText("P2 Motion Status Text", canvasObject.transform, new Vector2(0.75f, 0.18f), new Vector2(0.5f, 0.18f), TextAnchor.MiddleCenter, new Color(0.48f, 0.84f, 1f));
         game.scoreText = score;
         game.statusText = status;
         bridge.roomCodeText = room;
         bridge.bridgeStatusText = bridgeStatus;
+        bridge.playerOneMotionStatusText = p1Motion;
+        bridge.playerTwoMotionStatusText = p2Motion;
+
+        MainMenuController menu = CreateMainMenu(canvasObject.transform, bridge);
+        bridge.mainMenu = menu;
+    }
+
+    private static MainMenuController CreateMainMenu(Transform canvasRoot, PhoneMotionHttpBridge bridge)
+    {
+        GameObject panelObject = new GameObject("Main Menu");
+        panelObject.transform.SetParent(canvasRoot, false);
+        RectTransform panelRect = panelObject.AddComponent<RectTransform>();
+        panelRect.anchorMin = Vector2.zero;
+        panelRect.anchorMax = Vector2.one;
+        panelRect.offsetMin = Vector2.zero;
+        panelRect.offsetMax = Vector2.zero;
+
+        Image panelImage = panelObject.AddComponent<Image>();
+        panelImage.color = new Color(0.02f, 0.07f, 0.06f, 0.9f);
+        CanvasGroup group = panelObject.AddComponent<CanvasGroup>();
+
+        Text title = CreateMenuText("Title", panelObject.transform, new Vector2(0f, 222f), new Vector2(760f, 70f), 46, TextAnchor.MiddleCenter);
+        title.text = "Court Smasherz";
+        title.fontStyle = FontStyle.Bold;
+        title.color = new Color(1f, 0.86f, 0.38f);
+
+        RawImage qrImage = CreateQrImage(panelObject.transform, new Vector2(0f, 62f), new Vector2(280f, 280f));
+
+        Text room = CreateMenuText("Menu Room Text", panelObject.transform, new Vector2(0f, -102f), new Vector2(760f, 44f), 26, TextAnchor.MiddleCenter);
+        room.text = "Room: creating...";
+        room.fontStyle = FontStyle.Bold;
+
+        Text url = CreateMenuText("Menu Phone URL Text", panelObject.transform, new Vector2(0f, -148f), new Vector2(920f, 38f), 18, TextAnchor.MiddleCenter);
+        url.text = "Phone URL: starting server...";
+        url.color = new Color(0.83f, 0.94f, 0.9f);
+
+        Button startButton = CreateButton("Start Button", panelObject.transform, new Vector2(0f, -208f), new Vector2(220f, 58f), "Start");
+
+        Text ready = CreateMenuText("Ready Status Text", panelObject.transform, new Vector2(0f, -274f), new Vector2(760f, 44f), 24, TextAnchor.MiddleCenter);
+        ready.text = "Join both phones, then press Start.";
+
+        MainMenuController menu = panelObject.AddComponent<MainMenuController>();
+        menu.menuGroup = group;
+        menu.qrImage = qrImage;
+        menu.roomCodeText = room;
+        menu.phoneUrlText = url;
+        menu.readyStatusText = ready;
+        menu.startButton = startButton;
+        menu.bridge = bridge;
+        return menu;
+    }
+
+    private static RawImage CreateQrImage(Transform parent, Vector2 anchoredPosition, Vector2 size)
+    {
+        GameObject imageObject = new GameObject("QR Code Image");
+        imageObject.transform.SetParent(parent, false);
+        RawImage image = imageObject.AddComponent<RawImage>();
+        image.color = Color.white;
+        RectTransform rect = image.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = size;
+        return image;
+    }
+
+    private static Button CreateButton(string name, Transform parent, Vector2 anchoredPosition, Vector2 size, string label)
+    {
+        GameObject buttonObject = new GameObject(name);
+        buttonObject.transform.SetParent(parent, false);
+        Image image = buttonObject.AddComponent<Image>();
+        image.color = new Color(0.95f, 0.76f, 0.25f);
+        Button button = buttonObject.AddComponent<Button>();
+        button.targetGraphic = image;
+
+        RectTransform rect = button.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = size;
+
+        Text text = CreateMenuText("Label", buttonObject.transform, Vector2.zero, size, 24, TextAnchor.MiddleCenter);
+        text.text = label;
+        text.color = new Color(0.02f, 0.07f, 0.06f);
+        text.fontStyle = FontStyle.Bold;
+        return button;
+    }
+
+    private static Text CreateMenuText(string name, Transform parent, Vector2 anchoredPosition, Vector2 size, int fontSize, TextAnchor alignment)
+    {
+        GameObject textObject = new GameObject(name);
+        textObject.transform.SetParent(parent, false);
+        Text text = textObject.AddComponent<Text>();
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.fontSize = fontSize;
+        text.alignment = alignment;
+        text.color = Color.white;
+        text.horizontalOverflow = HorizontalWrapMode.Wrap;
+        text.verticalOverflow = VerticalWrapMode.Truncate;
+        RectTransform rect = text.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = size;
+        return text;
     }
 
     private static Text CreateText(string name, Transform parent, Vector2 anchoredPosition, int fontSize, TextAnchor alignment)
@@ -225,6 +345,49 @@ public static class CourtSmasherzSceneBuilder
         rect.pivot = new Vector2(0.5f, 1f);
         rect.anchoredPosition = anchoredPosition;
         rect.sizeDelta = new Vector2(0f, 50f);
+        return text;
+    }
+
+    private static Text CreateBottomText(string name, Transform parent, Vector2 anchoredPosition, int fontSize, TextAnchor alignment)
+    {
+        GameObject textObject = new GameObject(name);
+        textObject.transform.SetParent(parent, false);
+        Text text = textObject.AddComponent<Text>();
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.fontSize = fontSize;
+        text.alignment = alignment;
+        text.color = Color.white;
+        text.raycastTarget = false;
+        RectTransform rect = text.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0f, 0f);
+        rect.anchorMax = new Vector2(1f, 0f);
+        rect.pivot = new Vector2(0.5f, 0f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = new Vector2(0f, 48f);
+        return text;
+    }
+
+    private static Text CreatePlayerMotionText(string name, Transform parent, Vector2 anchor, Vector2 anchorSize, TextAnchor alignment, Color color)
+    {
+        GameObject textObject = new GameObject(name);
+        textObject.transform.SetParent(parent, false);
+        Text text = textObject.AddComponent<Text>();
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.fontSize = 22;
+        text.fontStyle = FontStyle.Bold;
+        text.alignment = alignment;
+        text.color = color;
+        text.horizontalOverflow = HorizontalWrapMode.Wrap;
+        text.verticalOverflow = VerticalWrapMode.Truncate;
+        text.raycastTarget = false;
+        text.gameObject.SetActive(false);
+
+        RectTransform rect = text.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(anchor.x - anchorSize.x * 0.5f, anchor.y - anchorSize.y * 0.5f);
+        rect.anchorMax = new Vector2(anchor.x + anchorSize.x * 0.5f, anchor.y + anchorSize.y * 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = Vector2.zero;
+        rect.sizeDelta = new Vector2(-40f, -20f);
         return text;
     }
 }

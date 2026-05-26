@@ -16,8 +16,11 @@ namespace CourtSmasherz
     {
         [Header("References")]
         public CourtSmasherzGameManager gameManager;
+        public MainMenuController mainMenu;
         public Text roomCodeText;
         public Text bridgeStatusText;
+        public Text playerOneMotionStatusText;
+        public Text playerTwoMotionStatusText;
 
         [Header("Server")]
         public string serverBaseUrl = "http://localhost:3000";
@@ -34,13 +37,56 @@ namespace CourtSmasherz
 
         private string roomCode;
         private string phoneBaseUrl;
+        private string phoneJoinUrl;
         private int lastEventId;
         private readonly float[] lastShotTimes = { -10f, -10f };
         private Process serverProcess;
+        private bool readinessCheckActive;
+        private bool p1Ready;
+        private bool p2Ready;
+        private readonly Coroutine[] playerStatusClearRoutines = new Coroutine[2];
 
         private void Start()
         {
+            if (gameManager != null)
+            {
+                gameManager.ShowMenu();
+            }
+
+            SetJoinHudVisible(true);
+            SetPlayerMotionStatus(0, string.Empty, false);
+            SetPlayerMotionStatus(1, string.Empty, false);
+
+            if (mainMenu != null)
+            {
+                mainMenu.SetJoinInfo(string.Empty, string.Empty);
+                mainMenu.ShowMenu();
+            }
+
             StartCoroutine(EnsureServerThenCreateRoom());
+        }
+
+        public void StartReadinessCheck()
+        {
+            readinessCheckActive = true;
+            p1Ready = false;
+            p2Ready = false;
+
+            if (gameManager != null)
+            {
+                gameManager.WaitForSwings();
+            }
+
+            SetJoinHudVisible(true);
+            SetPlayerMotionStatus(0, string.Empty, false);
+            SetPlayerMotionStatus(1, string.Empty, false);
+
+            if (mainMenu != null)
+            {
+                mainMenu.ShowWaitingForSwings(false, false);
+            }
+
+            SetBridgeStatus("Swing both phones once to start.");
         }
 
         private IEnumerator EnsureServerThenCreateRoom()
@@ -90,10 +136,17 @@ namespace CourtSmasherz
 
             CreateRoomResponse response = JsonUtility.FromJson<CreateRoomResponse>(request.downloadHandler.text);
             roomCode = response.roomCode;
+            phoneJoinUrl = $"{phoneBaseUrl}/controller.html?room={roomCode}";
             lastEventId = 0;
             if (roomCodeText != null)
             {
-                roomCodeText.text = $"Room: {roomCode} | Phone: {phoneBaseUrl}/controller.html";
+                roomCodeText.text = $"Room: {roomCode} | Phone: {phoneJoinUrl}";
+            }
+
+            if (mainMenu != null)
+            {
+                mainMenu.SetJoinInfo(roomCode, phoneJoinUrl);
+                mainMenu.ShowMenu();
             }
 
             SetBridgeStatus($"Open phone URL and join {roomCode}");
@@ -223,14 +276,27 @@ namespace CourtSmasherz
                     continue;
                 }
 
+                int playerIndex = unityEvent.playerId == "p2" ? 1 : 0;
+                if (readinessCheckActive && string.Equals(unityEvent.source, "motion", StringComparison.OrdinalIgnoreCase))
+                {
+                    MarkPlayerReady(playerIndex);
+                    SetBridgeStatus($"Ready swing from P{playerIndex + 1}");
+                    continue;
+                }
+
+                if (!gameManager.IsPlaying)
+                {
+                    continue;
+                }
+
                 gameManager.ApplyShot(new ShotEvent(
-                    unityEvent.playerId == "p2" ? 1 : 0,
+                    playerIndex,
                     ParseShotType(unityEvent.shotType),
                     unityEvent.power,
                     unityEvent.direction,
                     unityEvent.spin
                 ));
-                SetBridgeStatus($"Received {unityEvent.playerId} {unityEvent.shotType}");
+                SetPlayerMotionStatus(playerIndex, $"Motion swing detected: {ParseShotType(unityEvent.shotType)}", true);
             }
         }
 
@@ -274,9 +340,103 @@ namespace CourtSmasherz
             float direction = Mathf.Clamp(orientation.z / 55f + acceleration.x / 28f, -1f, 1f);
             float spin = Mathf.Clamp(rotationRate.z / 360f, -1f, 1f);
 
-            gameManager.ApplyShot(new ShotEvent(playerIndex, shotType, Mathf.Max(0.25f, power), direction, spin));
             lastShotTimes[playerIndex] = Time.time;
-            SetBridgeStatus($"Motion swing P{playerIndex + 1}: {shotType}");
+
+            if (readinessCheckActive)
+            {
+                MarkPlayerReady(playerIndex);
+                SetBridgeStatus($"Ready swing from P{playerIndex + 1}: {shotType}");
+                return;
+            }
+
+            if (gameManager.IsPlaying)
+            {
+                gameManager.ApplyShot(new ShotEvent(playerIndex, shotType, Mathf.Max(0.25f, power), direction, spin));
+                SetPlayerMotionStatus(playerIndex, $"Motion swing detected: {shotType}", true);
+            }
+        }
+
+        private void MarkPlayerReady(int playerIndex)
+        {
+            if (playerIndex == 0)
+            {
+                p1Ready = true;
+            }
+            else
+            {
+                p2Ready = true;
+            }
+
+            if (mainMenu != null)
+            {
+                mainMenu.ShowWaitingForSwings(p1Ready, p2Ready);
+            }
+
+            if (p1Ready && p2Ready)
+            {
+                readinessCheckActive = false;
+                if (mainMenu != null)
+                {
+                    mainMenu.HideMenu();
+                }
+
+                if (gameManager != null)
+                {
+                    gameManager.BeginMatch();
+                }
+
+                SetJoinHudVisible(false);
+                SetPlayerMotionStatus(0, string.Empty, false);
+                SetPlayerMotionStatus(1, string.Empty, false);
+            }
+        }
+
+        private void SetJoinHudVisible(bool visible)
+        {
+            if (roomCodeText != null)
+            {
+                roomCodeText.gameObject.SetActive(visible);
+            }
+
+            if (bridgeStatusText != null)
+            {
+                bridgeStatusText.gameObject.SetActive(visible);
+            }
+        }
+
+        private void SetPlayerMotionStatus(int playerIndex, string message, bool autoClear)
+        {
+            Text target = playerIndex == 0 ? playerOneMotionStatusText : playerTwoMotionStatusText;
+            if (target == null)
+            {
+                return;
+            }
+
+            if (playerStatusClearRoutines[playerIndex] != null)
+            {
+                StopCoroutine(playerStatusClearRoutines[playerIndex]);
+                playerStatusClearRoutines[playerIndex] = null;
+            }
+
+            target.text = string.IsNullOrEmpty(message) ? string.Empty : $"P{playerIndex + 1}: {message}";
+            target.gameObject.SetActive(!string.IsNullOrEmpty(message));
+            if (autoClear && !string.IsNullOrEmpty(message))
+            {
+                playerStatusClearRoutines[playerIndex] = StartCoroutine(ClearPlayerMotionStatusAfterDelay(playerIndex, 1.6f));
+            }
+        }
+
+        private IEnumerator ClearPlayerMotionStatusAfterDelay(int playerIndex, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            Text target = playerIndex == 0 ? playerOneMotionStatusText : playerTwoMotionStatusText;
+            if (target != null)
+            {
+                target.text = string.Empty;
+                target.gameObject.SetActive(false);
+            }
+
+            playerStatusClearRoutines[playerIndex] = null;
         }
 
         private ShotType ParseShotType(string shotType)
@@ -348,6 +508,7 @@ namespace CourtSmasherz
             public string eventType;
             public string playerId;
             public string shotType;
+            public string source;
             public float power;
             public float direction;
             public float spin;

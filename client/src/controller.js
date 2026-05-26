@@ -37,6 +37,7 @@ manualShotButtons.forEach((button) => {
 });
 permissionButton.disabled = false;
 calibrateButton.disabled = true;
+applyInitialQueryParams();
 
 client.on("joinedRoom", (payload) => {
   connectionStatus.textContent = `Connected as ${payload.role.toUpperCase()} in ${payload.roomCode}`;
@@ -131,7 +132,7 @@ function onMotion(event) {
   const shot = classifyShot(smoothedSample, calibration || undefined);
   if (shot && roomCode && now - lastShotAt > 520) {
     shotStatus.textContent = `${shot.shotType} ${(shot.power * 100).toFixed(0)}%`;
-    client.send("shotEvent", { roomCode, ...shot });
+    client.send("shotEvent", { roomCode, source: "motion", ...shot });
     lastShotAt = now;
   }
 }
@@ -181,6 +182,7 @@ function sendManualShot(shotType) {
     power: shotType === "smash" ? 1 : shotType === "lob" ? 0.65 : 0.78,
     direction: shotType === "backhand" ? -0.45 : shotType === "forehand" ? 0.45 : 0,
     spin: shotType === "lob" ? 0.2 : 0,
+    source: "manual",
     timestamp: Date.now()
   };
 
@@ -204,4 +206,17 @@ function getSensorEnvironmentText() {
   const motionApi = "DeviceMotionEvent" in window ? "DeviceMotion yes" : "DeviceMotion no";
   const orientationApi = "DeviceOrientationEvent" in window ? "DeviceOrientation yes" : "DeviceOrientation no";
   return `${secure} context on ${host} | ${motionApi} | ${orientationApi}`;
+}
+
+function applyInitialQueryParams() {
+  const params = new URLSearchParams(window.location.search);
+  const room = params.get("room");
+  if (room) {
+    roomInput.value = room.trim().toUpperCase().slice(0, 5);
+  }
+
+  const player = params.get("player");
+  if (player === "p1" || player === "p2") {
+    selectPlayer(player);
+  }
 }

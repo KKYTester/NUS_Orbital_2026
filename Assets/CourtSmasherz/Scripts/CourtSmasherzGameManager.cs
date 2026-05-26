@@ -7,6 +7,14 @@ namespace CourtSmasherz
 {
     public class CourtSmasherzGameManager : MonoBehaviour
     {
+        public enum GamePhase
+        {
+            Menu,
+            WaitingForSwings,
+            Playing,
+            Finished
+        }
+
         [Header("Scene References")]
         public Transform ball;
         public Transform playerOneRoot;
@@ -37,7 +45,10 @@ namespace CourtSmasherz
         private Vector3 ballVelocity;
         private int playerOneScore;
         private int playerTwoScore;
-        private bool matchFinished;
+        private bool inputLocked = true;
+
+        public GamePhase CurrentPhase { get; private set; } = GamePhase.Menu;
+        public bool IsPlaying => CurrentPhase == GamePhase.Playing;
 
         private void Start()
         {
@@ -51,17 +62,23 @@ namespace CourtSmasherz
                 playerTwoRacquetBaseRotation = playerTwoRacquet.localRotation;
             }
 
-            ResetMatch();
+            ShowMenu();
         }
 
         private void Update()
         {
-            if (matchFinished)
+            if (CurrentPhase == GamePhase.Finished)
             {
                 if (WasPressed(Keyboard.current?.rKey))
                 {
-                    ResetMatch();
+                    ShowMenu();
                 }
+                return;
+            }
+
+            if (CurrentPhase != GamePhase.Playing)
+            {
+                UpdateHud();
                 return;
             }
 
@@ -76,6 +93,11 @@ namespace CourtSmasherz
 
         public void ApplyShot(ShotEvent shot)
         {
+            if (inputLocked || CurrentPhase != GamePhase.Playing)
+            {
+                return;
+            }
+
             Transform racquet = shot.PlayerIndex == 0 ? playerOneRacquet : playerTwoRacquet;
             if (racquet == null || ball == null)
             {
@@ -131,12 +153,47 @@ namespace CourtSmasherz
         {
             playerOneScore = 0;
             playerTwoScore = 0;
-            matchFinished = false;
-            ResetBall(1);
+            CurrentPhase = GamePhase.Playing;
+            SetInputLocked(false);
+            ResetBall(1, true);
             SetStatus(enableKeyboardTestShots
                 ? "Match started. Keyboard test shots are enabled."
                 : "Match started. Join the Unity room from your phone controller.");
             UpdateHud();
+        }
+
+        public void ShowMenu()
+        {
+            playerOneScore = 0;
+            playerTwoScore = 0;
+            CurrentPhase = GamePhase.Menu;
+            SetInputLocked(true);
+            ResetBall(1, false);
+            SetStatus("Scan the QR code, join both phones, then press Start.");
+            UpdateHud();
+        }
+
+        public void WaitForSwings()
+        {
+            CurrentPhase = GamePhase.WaitingForSwings;
+            SetInputLocked(true);
+            ResetBall(1, false);
+            SetStatus("Waiting for P1 and P2 to swing once.");
+            UpdateHud();
+        }
+
+        public void BeginMatch()
+        {
+            CurrentPhase = GamePhase.Playing;
+            SetInputLocked(false);
+            ResetBall(1, true);
+            SetStatus("Both phones ready. Match started.");
+            UpdateHud();
+        }
+
+        public void SetInputLocked(bool locked)
+        {
+            inputLocked = locked;
         }
 
         private void UpdateAutomaticPlayerMovement()
@@ -204,12 +261,13 @@ namespace CourtSmasherz
             SetStatus($"P{playerIndex + 1} scores");
             if (HasWinner(playerIndex))
             {
-                matchFinished = true;
+                CurrentPhase = GamePhase.Finished;
+                SetInputLocked(true);
                 SetStatus($"P{playerIndex + 1} wins. Press R to restart.");
             }
             else
             {
-                ResetBall(playerIndex == 0 ? 1 : -1);
+                ResetBall(playerIndex == 0 ? 1 : -1, true);
             }
         }
 
@@ -220,7 +278,7 @@ namespace CourtSmasherz
             return scorer >= matchPoint && scorer - other >= 2;
         }
 
-        private void ResetBall(int direction)
+        private void ResetBall(int direction, bool serve)
         {
             if (ball == null)
             {
@@ -228,7 +286,9 @@ namespace CourtSmasherz
             }
 
             ball.position = new Vector3(0f, 0.55f, 0f);
-            ballVelocity = new Vector3(direction * 6.5f, 0f, Random.value > 0.5f ? 1.8f : -1.8f);
+            ballVelocity = serve
+                ? new Vector3(direction * 6.5f, 0f, Random.value > 0.5f ? 1.8f : -1.8f)
+                : Vector3.zero;
         }
 
         private void UpdateKeyboardTestShots()

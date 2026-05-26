@@ -168,6 +168,7 @@ function enqueueUnityEvent(roomCode, shot) {
     eventType: "shot",
     playerId: shot.playerId,
     shotType: shot.shotType,
+    source: shot.source || "unknown",
     power: Number(shot.power || 0.75),
     direction: Number(shot.direction || 0),
     spin: Number(shot.spin || 0),
