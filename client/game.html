@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Court Smasherz Game</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="game-shell">
+    <header class="hud">
+      <div>
+        <p class="eyebrow">Room</p>
+        <strong id="roomCode">Creating...</strong>
+      </div>
+      <div>
+        <p class="eyebrow">Controllers</p>
+        <strong id="connections">P1 off | P2 off</strong>
+      </div>
+      <div>
+        <p class="eyebrow">Score</p>
+        <strong id="score">0 - 0</strong>
+      </div>
+      <button id="restartButton" class="icon-button" title="Restart match">Restart</button>
+    </header>
+    <canvas id="court" width="1100" height="680" aria-label="Court Smasherz game court"></canvas>
+    <section class="status-strip">
+      <span id="phase">Connecting to server...</span>
+      <span id="lastShot">No shots yet</span>
+    </section>
+    <script type="module" src="/src/game.js"></script>
+  </body>
+</html>
