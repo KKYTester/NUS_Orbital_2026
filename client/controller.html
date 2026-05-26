@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Court Smasherz Controller</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="controller-shell">
+    <main class="controller-panel">
+      <p class="eyebrow">Phone Controller</p>
+      <h1>Join Court Smasherz</h1>
+      <label>
+        Room code
+        <input id="roomInput" maxlength="5" autocomplete="off" placeholder="ABCDE" />
+      </label>
+      <div class="segmented">
+        <button id="p1Button" class="selected">Player 1</button>
+        <button id="p2Button">Player 2</button>
+      </div>
+      <button id="joinButton" class="button primary">Join room</button>
+      <button id="permissionButton" class="button" type="button">Enable motion sensors</button>
+      <button id="calibrateButton" class="button" type="button" disabled>Calibrate neutral paddle</button>
+      <section class="manual-controls" aria-label="Manual test controls">
+        <p class="eyebrow">Fallback Test Shots</p>
+        <div class="shot-grid">
+          <button class="button" type="button" data-shot="forehand">Forehand</button>
+          <button class="button" type="button" data-shot="backhand">Backhand</button>
+          <button class="button" type="button" data-shot="lob">Lob</button>
+          <button class="button" type="button" data-shot="smash">Smash</button>
+        </div>
+      </section>
+      <div class="readout">
+        <span id="connectionStatus">Not connected</span>
+        <span id="motionStatus">Motion idle</span>
+        <span id="sensorDebug">Accel -, -, - | Rot -, -, -</span>
+        <span id="shotStatus">No shot detected</span>
+      </div>
+    </main>
+    <script type="module" src="/src/controller.js"></script>
+  </body>
+</html>
