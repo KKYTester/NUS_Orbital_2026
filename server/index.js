@@ -1,3 +1,4 @@
+import { networkInterfaces } from "node:os";
 import { createServer } from "node:http";
 import { createHash, randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
@@ -21,6 +22,45 @@ const mime = {
   ".svg": "image/svg+xml"
 };
 
+function getAdvertisedHost() {
+  if (process.env.PHONE_HOST) {
+    return process.env.PHONE_HOST;
+  }
+
+  const interfaces = networkInterfaces();
+
+  // Prefer Wi-Fi adapters first
+  for (const [name, addresses] of Object.entries(interfaces)) {
+    const lowerName = name.toLowerCase();
+
+    if (
+      !lowerName.includes("wi-fi") &&
+      !lowerName.includes("wifi") &&
+      !lowerName.includes("wireless") &&
+      !lowerName.includes("wlan")
+    ) {
+      continue;
+    }
+
+    for (const address of addresses || []) {
+      if (address.family === "IPv4" && !address.internal) {
+        return address.address;
+      }
+    }
+  }
+
+  // Fallback to any non-internal IPv4
+  for (const addresses of Object.values(interfaces)) {
+    for (const address of addresses || []) {
+      if (address.family === "IPv4" && !address.internal) {
+        return address.address;
+      }
+    }
+  }
+
+  return "localhost";
+}
+
 const server = createServer(async (req, res) => {
   if (!req.url) return send(res, 400, "Bad request");
   const url = new URL(req.url, `http://${req.headers.host}`);
@@ -32,7 +72,16 @@ const server = createServer(async (req, res) => {
   if (url.pathname === "/unity/create-room") {
     const roomCode = createRoomCode(rooms);
     ensureUnityEventQueue(roomCode);
-    return sendJson(res, 200, { roomCode });
+
+    const host = getAdvertisedHost();
+    const phoneJoinUrl = `http://${host}:${port}/controller.html?room=${roomCode}`;
+    const phoneBaseUrl = `http://${host}:${port}`;
+
+    return sendJson(res, 200, {
+      roomCode,
+      phoneBaseUrl,
+      phoneJoinUrl
+    });
   }
 
   if (url.pathname === "/unity/events") {

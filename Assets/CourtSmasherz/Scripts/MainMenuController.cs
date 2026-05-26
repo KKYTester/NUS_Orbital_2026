@@ -1,6 +1,4 @@
-using System.Collections;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 
 namespace CourtSmasherz
@@ -15,7 +13,6 @@ namespace CourtSmasherz
         public Button startButton;
         public PhoneMotionHttpBridge bridge;
         private bool hasJoinInfo;
-        private Coroutine qrLoadRoutine;
 
         private void Start()
         {
@@ -41,13 +38,8 @@ namespace CourtSmasherz
 
             if (qrImage != null && !string.IsNullOrEmpty(phoneUrl))
             {
-                qrImage.texture = SimpleQrCodeGenerator.Generate(phoneUrl, 8);
-                if (qrLoadRoutine != null)
-                {
-                    StopCoroutine(qrLoadRoutine);
-                }
-
-                qrLoadRoutine = StartCoroutine(LoadQrFromService(phoneUrl));
+                Debug.Log("QR phone URL: " + phoneUrl);
+                qrImage.texture = ZxingQrCodeGenerator.Generate(phoneUrl, 512);
             }
 
             if (startButton != null)
@@ -110,23 +102,6 @@ namespace CourtSmasherz
             menuGroup.alpha = visible ? 1f : 0f;
             menuGroup.interactable = visible;
             menuGroup.blocksRaycasts = visible;
-        }
-
-        private IEnumerator LoadQrFromService(string phoneUrl)
-        {
-            string qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=16&data=" +
-                UnityWebRequest.EscapeURL(phoneUrl);
-
-            using UnityWebRequest request = UnityWebRequestTexture.GetTexture(qrUrl);
-            request.timeout = 8;
-            yield return request.SendWebRequest();
-
-            if (request.result == UnityWebRequest.Result.Success && qrImage != null)
-            {
-                Texture2D texture = DownloadHandlerTexture.GetContent(request);
-                texture.filterMode = FilterMode.Point;
-                qrImage.texture = texture;
-            }
         }
     }
 }

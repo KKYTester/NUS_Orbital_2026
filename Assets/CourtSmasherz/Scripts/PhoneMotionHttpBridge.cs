@@ -45,6 +45,12 @@ namespace CourtSmasherz
         private bool p1Ready;
         private bool p2Ready;
         private readonly Coroutine[] playerStatusClearRoutines = new Coroutine[2];
+        /*        
+        Following variable is for Unity to remember if it was the one that started a local server.
+        Later when we move Node js to an online host and we set autoStartLocalServer to false,
+        this helps us keep track and ensure we do not accidentally kill the online server process       
+        */
+        private bool startedLocalServerFromUnity;
 
         private void Start()
         {
@@ -64,6 +70,16 @@ namespace CourtSmasherz
             }
 
             StartCoroutine(EnsureServerThenCreateRoom());
+        }
+
+        private void OnApplicationQuit()
+        {
+            StopLocalNodeServer();
+        }
+
+        private void OnDisable()
+        {
+            StopLocalNodeServer();
         }
 
         public void StartReadinessCheck()
@@ -91,6 +107,7 @@ namespace CourtSmasherz
 
         private IEnumerator EnsureServerThenCreateRoom()
         {
+            // Temporarily keep this BaseUrl as backup before /unity/create-room replies
             phoneBaseUrl = $"http://{GetLocalIPv4Address()}:3000";
             if (roomCodeText != null)
             {
@@ -136,8 +153,23 @@ namespace CourtSmasherz
 
             CreateRoomResponse response = JsonUtility.FromJson<CreateRoomResponse>(request.downloadHandler.text);
             roomCode = response.roomCode;
-            phoneJoinUrl = $"{phoneBaseUrl}/controller.html?room={roomCode}";
+            // Check for valid "Base" url
+            if (!string.IsNullOrEmpty(response.phoneBaseUrl))
+            {
+                phoneBaseUrl = response.phoneBaseUrl;
+            }
+            // If we already have a valid direct JoinUrl, just use that
+            if (!string.IsNullOrEmpty(response.phoneJoinUrl))
+            {
+                phoneJoinUrl = response.phoneJoinUrl;
+            }
+            else
+            {
+                // Reconstruct join url from BaseUrl
+                phoneJoinUrl = $"{phoneBaseUrl}/controller.html?room={roomCode}";
+            }
             lastEventId = 0;
+
             if (roomCodeText != null)
             {
                 roomCodeText.text = $"Room: {roomCode} | Phone: {phoneJoinUrl}";
@@ -184,12 +216,52 @@ namespace CourtSmasherz
             try
             {
                 serverProcess = Process.Start(startInfo);
+                startedLocalServerFromUnity = serverProcess != null;
+
                 SetBridgeStatus("Starting local server...");
+                Debug.Log("Started local Node server from Unity.");
             }
             catch (Exception exception)
             {
+                startedLocalServerFromUnity = false;
+                serverProcess = null;
+
                 SetBridgeStatus($"Could not start server: {exception.Message}");
                 Debug.LogException(exception);
+            }
+        }
+
+        private void StopLocalNodeServer()
+        {
+            if (!startedLocalServerFromUnity)
+            {
+                return;
+            }
+
+            if (serverProcess == null)
+            {
+                startedLocalServerFromUnity = false;
+                return;
+            }
+
+            try
+            {
+                if (!serverProcess.HasExited)
+                {
+                    serverProcess.Kill();
+                    serverProcess.WaitForExit(2000);
+                    Debug.Log("Stopped local Node server started by Unity.");
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("Failed to stop local Node server: " + exception.Message);
+            }
+            finally
+            {
+                serverProcess.Dispose();
+                serverProcess = null;
+                startedLocalServerFromUnity = false;
             }
         }
 
@@ -493,6 +565,8 @@ namespace CourtSmasherz
         private class CreateRoomResponse
         {
             public string roomCode;
+            public string phoneBaseUrl;
+            public string phoneJoinUrl;
         }
 
         [Serializable]
