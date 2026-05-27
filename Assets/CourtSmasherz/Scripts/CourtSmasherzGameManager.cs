@@ -23,6 +23,7 @@ namespace CourtSmasherz
         public Transform playerTwoRacquet;
         public Text scoreText;
         public Text statusText;
+        public PhoneMotionHttpBridge bridge;
 
         [Header("Court")]
         public float leftOutX = -9.25f;
@@ -71,8 +72,16 @@ namespace CourtSmasherz
             {
                 if (WasPressed(Keyboard.current?.rKey))
                 {
-                    ShowMenu();
+                    if (bridge != null)
+                    {
+                        bridge.ReturnToJoinMenu();
+                    }
+                    else
+                    {
+                        ShowMenu();
+                    }
                 }
+
                 return;
             }
 

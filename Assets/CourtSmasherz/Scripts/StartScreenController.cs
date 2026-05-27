@@ -1,30 +1,39 @@
 using UnityEngine;
 
-public class StartScreenController : MonoBehaviour
+namespace CourtSmasherz
 {
-    [Header("UI")]
-    public GameObject startScreen;
-    public GameObject hudCanvas;
-
-    private void Start()
+    public class StartScreenController : MonoBehaviour
     {
-        // Show start screen first
-        if (startScreen != null)
-            startScreen.SetActive(true);
+        [Header("Title Screen")]
+        public GameObject startScreen;
 
-        // Hide HUD first
-        if (hudCanvas != null)
-            hudCanvas.SetActive(false);
-    }
+        [Header("UI Flow")]
+        public MainMenuController mainMenu;
 
-    public void PlayGame()
-    {
-        // Hide start screen
-        if (startScreen != null)
-            startScreen.SetActive(false);
+        private void Start()
+        {
+            if (startScreen != null)
+            {
+                startScreen.SetActive(true);
+            }
 
-        // Show HUD
-        if (hudCanvas != null)
-            hudCanvas.SetActive(true);
+            if (mainMenu != null)
+            {
+                mainMenu.HideMenu();
+            }
+        }
+
+        public void PlayGame()
+        {
+            if (startScreen != null)
+            {
+                startScreen.SetActive(false);
+            }
+
+            if (mainMenu != null)
+            {
+                mainMenu.ShowMenu();
+            }
+        }
     }
 }

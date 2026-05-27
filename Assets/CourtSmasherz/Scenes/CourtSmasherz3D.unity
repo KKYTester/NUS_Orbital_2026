@@ -3719,7 +3719,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartScreenController
   startScreen: {fileID: 404983275}
-  hudCanvas: {fileID: 60934996}
+  mainMenu: {fileID: 2111739599}
 --- !u!4 &1094524434
 Transform:
   m_ObjectHideFlags: 0
@@ -4511,6 +4511,7 @@ MonoBehaviour:
   playerTwoRacquet: {fileID: 730541303}
   scoreText: {fileID: 392705184}
   statusText: {fileID: 1548118893}
+  bridge: {fileID: 1583913855}
   leftOutX: -9.25
   rightOutX: 9.25
   minZ: -4.4

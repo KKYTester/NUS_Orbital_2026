@@ -66,7 +66,7 @@ namespace CourtSmasherz
             if (mainMenu != null)
             {
                 mainMenu.SetJoinInfo(string.Empty, string.Empty);
-                mainMenu.ShowMenu();
+                mainMenu.HideMenu();
             }
 
             StartCoroutine(EnsureServerThenCreateRoom());
@@ -103,6 +103,31 @@ namespace CourtSmasherz
             }
 
             SetBridgeStatus("Swing both phones once to start.");
+        }
+
+        // For restarting after a match
+        public void ReturnToJoinMenu()
+        {
+            readinessCheckActive = false;
+            p1Ready = false;
+            p2Ready = false;
+
+            if (gameManager != null)
+            {
+                gameManager.ShowMenu();
+            }
+
+            SetJoinHudVisible(true);
+
+            SetPlayerMotionStatus(0, string.Empty, false);
+            SetPlayerMotionStatus(1, string.Empty, false);
+
+            if (mainMenu != null)
+            {
+                mainMenu.ShowMenu();
+            }
+
+            SetBridgeStatus("Join both phones, then press Start.");
         }
 
         private IEnumerator EnsureServerThenCreateRoom()
@@ -178,7 +203,6 @@ namespace CourtSmasherz
             if (mainMenu != null)
             {
                 mainMenu.SetJoinInfo(roomCode, phoneJoinUrl);
-                mainMenu.ShowMenu();
             }
 
             SetBridgeStatus($"Open phone URL and join {roomCode}");
