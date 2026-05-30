@@ -19,8 +19,6 @@ namespace CourtSmasherz
         public Transform ball;
         public Transform playerOneRoot;
         public Transform playerTwoRoot;
-        public Transform playerOneRacquet;
-        public Transform playerTwoRacquet;
         public Text scoreText;
         public Text statusText;
         public PhoneMotionHttpBridge bridge;
@@ -37,27 +35,6 @@ namespace CourtSmasherz
         public float autoMoveSpeed = 8f;
         public bool enableKeyboardTestShots = false;
 
-        [Header("Phone Racquet Rotation Mapping")]
-        public bool usePhoneRacquetRotation = true;
-
-        public bool invertPhonePitch = true;
-        public bool invertPhoneYaw = true;
-        public bool invertPhoneRoll = false;
-        public Vector3 phoneRotationOffsetEuler = Vector3.zero;
-
-        [Range(0f, 1f)]
-        public float phoneRotationSmoothing = 0.25f;
-        private Quaternion[] phoneNeutralRotations = new Quaternion[2];
-        private bool[] hasPhoneNeutralRotation = new bool[2];
-        private Quaternion[] racquetNeutralRotations = new Quaternion[2];
-        private bool[] hasRacquetNeutralRotation = new bool[2];
-
-        private Quaternion playerOneRacquetBaseRotation;
-        private Quaternion playerTwoRacquetBaseRotation;
-
-        private Quaternion[] phoneCalibrationOffsets = new Quaternion[2];
-        private bool[] phoneCalibrated = new bool[2];
-
         private int playerOneScore;
         private int playerTwoScore;
         private bool inputLocked = true;
@@ -67,16 +44,6 @@ namespace CourtSmasherz
 
         private void Start()
         {
-            if (playerOneRacquet != null)
-            {
-                playerOneRacquetBaseRotation = playerOneRacquet.localRotation;
-            }
-
-            if (playerTwoRacquet != null)
-            {
-                playerTwoRacquetBaseRotation = playerTwoRacquet.localRotation;
-            }
-
             if (ballController != null)
             {
                 ballController.OnPointScored += AwardPoint;
@@ -143,74 +110,6 @@ namespace CourtSmasherz
             ballController.ApplyShot(shot);
         }
 
-        public void ApplyPhoneMotion(int playerIndex, Vector3 acceleration, Vector3 rotationRate, Vector3 orientation,
-                                    bool hasQuaternion, Quaternion phoneQuaternion)
-        {
-            if (!usePhoneRacquetRotation)
-            {
-                return;
-            }
-
-            Transform racquet = playerIndex == 0 ? playerOneRacquet : playerTwoRacquet;
-
-            if (racquet == null)
-            {
-                return;
-            }
-
-            Quaternion rawPhoneRotation;
-
-            if (hasQuaternion)
-            {
-                    rawPhoneRotation = new Quaternion(
-                        phoneQuaternion.x,
-                        phoneQuaternion.y,
-                        -phoneQuaternion.z,
-                        -phoneQuaternion.w
-                    );
-            }
-            else
-            {
-                float pitch = invertPhonePitch ? -orientation.z : orientation.z;
-                float yaw = invertPhoneYaw ? -orientation.x : orientation.x;
-                float roll = invertPhoneRoll ? -orientation.y : orientation.y;
-
-                rawPhoneRotation = Quaternion.Euler(pitch, yaw, roll);
-            }
-
-            if (!hasPhoneNeutralRotation[playerIndex])
-            {
-                phoneNeutralRotations[playerIndex] = rawPhoneRotation;
-                racquetNeutralRotations[playerIndex] = racquet.localRotation;
-
-                hasPhoneNeutralRotation[playerIndex] = true;
-                hasRacquetNeutralRotation[playerIndex] = true;
-            }
-
-            Quaternion relativePhoneRotation =
-                Quaternion.Inverse(phoneNeutralRotations[playerIndex]) * rawPhoneRotation;
-
-            Quaternion offsetRotation = Quaternion.Euler(phoneRotationOffsetEuler);
-
-            Quaternion targetRotation =
-                racquetNeutralRotations[playerIndex] * offsetRotation * relativePhoneRotation;
-
-            racquet.localRotation = Quaternion.Slerp(
-                racquet.localRotation,
-                targetRotation,
-                phoneRotationSmoothing
-            );
-        }
-
-        public void ResetPhoneNeutralRotations()
-        {
-            hasPhoneNeutralRotation[0] = false;
-            hasPhoneNeutralRotation[1] = false;
-
-            hasRacquetNeutralRotation[0] = false;
-            hasRacquetNeutralRotation[1] = false;
-        }
-
         public void ResetMatch()
         {
             playerOneScore = 0;
@@ -255,7 +154,10 @@ namespace CourtSmasherz
 
         public void BeginMatch()
         {
-            ResetPhoneNeutralRotations();
+            if (bridge != null)
+            {
+                bridge.ResetRacquetNeutralRotations();
+            }
             CurrentPhase = GamePhase.Playing;
             SetInputLocked(false);
             if (ballController != null)

@@ -33,7 +33,7 @@ namespace CourtSmasherz
 
         public bool ApplyShot(ShotEvent shot)
         {
-            Transform racquet = shot.PlayerIndex == 0 ? playerOneRacquet : playerTwoRacquet;
+            Transform racquet = shot.PlayerIndex == 0 ?     playerOneRacquet : playerTwoRacquet;
 
             if (racquet == null)
             {

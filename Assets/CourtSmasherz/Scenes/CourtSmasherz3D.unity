@@ -1265,6 +1265,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 260991436}
+  - component: {fileID: 260991437}
   m_Layer: 0
   m_Name: Racquet Pivot
   m_TagString: Untagged
@@ -1289,6 +1290,25 @@ Transform:
   - {fileID: 1881339735}
   m_Father: {fileID: 1753861487}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &260991437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 260991435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f4fe0bbfe012884a8a3d9a15532de14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CourtSmasherz.PickleballRacquetController
+  usePhoneRacquetRotation: 1
+  invertPhonePitch: 1
+  invertPhoneYaw: 1
+  invertPhoneRoll: 0
+  phoneRotationOffsetEuler: {x: 0, y: 0, z: 0}
+  phoneRotationSmoothing: 0.25
+  useQuaternionOrientation: 1
 --- !u!21 &316880684
 Material:
   serializedVersion: 8
@@ -3285,6 +3305,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 730541303}
+  - component: {fileID: 730541304}
   m_Layer: 0
   m_Name: Racquet Pivot
   m_TagString: Untagged
@@ -3309,6 +3330,25 @@ Transform:
   - {fileID: 1364280446}
   m_Father: {fileID: 668803703}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &730541304
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730541302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f4fe0bbfe012884a8a3d9a15532de14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CourtSmasherz.PickleballRacquetController
+  usePhoneRacquetRotation: 1
+  invertPhonePitch: 1
+  invertPhoneYaw: 1
+  invertPhoneRoll: 0
+  phoneRotationOffsetEuler: {x: 0, y: 0, z: 0}
+  phoneRotationSmoothing: 0.25
+  useQuaternionOrientation: 1
 --- !u!1 &792325262
 GameObject:
   m_ObjectHideFlags: 0
@@ -4524,6 +4564,7 @@ GameObject:
   - component: {fileID: 1583913856}
   - component: {fileID: 1583913855}
   - component: {fileID: 1583913857}
+  - component: {fileID: 1583913859}
   m_Layer: 0
   m_Name: Game Manager
   m_TagString: Untagged
@@ -4549,6 +4590,8 @@ MonoBehaviour:
   bridgeStatusText: {fileID: 1586695571}
   playerOneMotionStatusText: {fileID: 351003083}
   playerTwoMotionStatusText: {fileID: 1510618800}
+  playerOneRacquetController: {fileID: 260991437}
+  playerTwoRacquetController: {fileID: 730541304}
   serverBaseUrl: http://localhost:3000
   pollIntervalSeconds: 0.08
   autoStartLocalServer: 1
@@ -4573,8 +4616,6 @@ MonoBehaviour:
   ball: {fileID: 405539394}
   playerOneRoot: {fileID: 1753861487}
   playerTwoRoot: {fileID: 668803703}
-  playerOneRacquet: {fileID: 260991436}
-  playerTwoRacquet: {fileID: 730541303}
   scoreText: {fileID: 392705184}
   statusText: {fileID: 1548118893}
   bridge: {fileID: 1583913855}
@@ -4586,12 +4627,6 @@ MonoBehaviour:
   matchPoint: 7
   autoMoveSpeed: 8
   enableKeyboardTestShots: 0
-  usePhoneRacquetRotation: 1
-  invertPhonePitch: 1
-  invertPhoneYaw: 1
-  invertPhoneRoll: 0
-  phoneRotationOffsetEuler: {x: 0, y: 0, z: 0}
-  phoneRotationSmoothing: 0.25
 --- !u!114 &1583913857
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4625,6 +4660,32 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1583913859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1583913854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 741464363fe24e547ada1e8f6fd21182, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CourtSmasherz.CourtSmasherzGameManager
+  ball: {fileID: 0}
+  playerOneRoot: {fileID: 0}
+  playerTwoRoot: {fileID: 0}
+  scoreText: {fileID: 0}
+  statusText: {fileID: 0}
+  bridge: {fileID: 0}
+  ballController: {fileID: 0}
+  minZ: -4.4
+  maxZ: 4.4
+  playerOneX: -7.3
+  playerTwoX: 7.3
+  matchPoint: 7
+  autoMoveSpeed: 8
+  enableKeyboardTestShots: 0
 --- !u!1 &1586695570
 GameObject:
   m_ObjectHideFlags: 0

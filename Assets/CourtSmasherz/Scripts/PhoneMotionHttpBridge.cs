@@ -21,6 +21,8 @@ namespace CourtSmasherz
         public Text bridgeStatusText;
         public Text playerOneMotionStatusText;
         public Text playerTwoMotionStatusText;
+        public PickleballRacquetController playerOneRacquetController;
+        public PickleballRacquetController playerTwoRacquetController;
 
         [Header("Server")]
         public string serverBaseUrl = "http://localhost:3000";
@@ -420,14 +422,19 @@ namespace CourtSmasherz
                 );
             }
 
-            gameManager.ApplyPhoneMotion(
-                playerIndex,
-                acceleration,
-                rotationRate,
-                orientation,
-                unityEvent.hasQuaternion,
-                phoneQuaternion
-            );
+            PickleballRacquetController racquetController =
+                playerIndex == 0 ? playerOneRacquetController : playerTwoRacquetController;
+
+            if (racquetController != null)
+            {
+                racquetController.ApplyPhoneMotion(
+                    acceleration,
+                    rotationRate,
+                    orientation,
+                    unityEvent.hasQuaternion,
+                    phoneQuaternion
+                );
+            }
 
             float accelerationMagnitude = acceleration.magnitude;
             float rotationMagnitude = rotationRate.magnitude;
@@ -468,6 +475,19 @@ namespace CourtSmasherz
             {
                 gameManager.ApplyShot(new ShotEvent(playerIndex, shotType, Mathf.Max(0.25f, power), direction, spin));
                 SetPlayerMotionStatus(playerIndex, $"Motion swing detected: {shotType}", true);
+            }
+        }
+
+        public void ResetRacquetNeutralRotations()
+        {
+            if (playerOneRacquetController != null)
+            {
+                playerOneRacquetController.ResetNeutralRotation();
+            }
+
+            if (playerTwoRacquetController != null)
+            {
+                playerTwoRacquetController.ResetNeutralRotation();
             }
         }
 
