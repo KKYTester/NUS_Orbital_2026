@@ -22,8 +22,14 @@ namespace CourtSmasherz
         private Quaternion phoneNeutralRotation;
         private Quaternion racquetNeutralRotation;
         private bool hasPhoneNeutralRotation;
+        private Quaternion initialLocalRotation;
 
         public Transform HitTransform => transform;
+
+        private void Awake()
+        {
+            initialLocalRotation = transform.localRotation;
+        }
 
         public void ApplyPhoneMotion(
             Vector3 acceleration,
@@ -83,6 +89,7 @@ namespace CourtSmasherz
         public void ResetNeutralRotation()
         {
             hasPhoneNeutralRotation = false;
+            transform.localRotation = initialLocalRotation;
         }
     }
 }

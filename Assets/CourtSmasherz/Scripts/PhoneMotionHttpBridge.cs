@@ -425,7 +425,8 @@ namespace CourtSmasherz
             PickleballRacquetController racquetController =
                 playerIndex == 0 ? playerOneRacquetController : playerTwoRacquetController;
 
-            if (racquetController != null)
+            if (gameManager != null && (gameManager.CurrentPhase == CourtSmasherzGameManager.GamePhase.Playing ||
+                gameManager.CurrentPhase == CourtSmasherzGameManager.GamePhase.Finished) && racquetController != null)
             {
                 racquetController.ApplyPhoneMotion(
                     acceleration,
