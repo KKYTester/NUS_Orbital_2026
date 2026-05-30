@@ -231,21 +231,39 @@ function enqueueUnityEvent(roomCode, shot) {
 function enqueueUnitySensorEvent(roomCode, sample) {
   ensureUnityEventQueue(roomCode);
   const queue = unityEvents.get(roomCode);
+
+  const hasQuaternion =
+    sample.quaternion &&
+    Number.isFinite(Number(sample.quaternion.x)) &&
+    Number.isFinite(Number(sample.quaternion.y)) &&
+    Number.isFinite(Number(sample.quaternion.z)) &&
+    Number.isFinite(Number(sample.quaternion.w));
+
   queue.push({
     id: nextUnityEventId++,
     eventType: "sensor",
     playerId: sample.playerId,
     timestamp: Number(sample.timestamp || Date.now()),
+
     accelX: Number(sample.accel?.x || 0),
     accelY: Number(sample.accel?.y || 0),
     accelZ: Number(sample.accel?.z || 0),
+
     rotationAlpha: Number(sample.rotation?.alpha || 0),
     rotationBeta: Number(sample.rotation?.beta || 0),
     rotationGamma: Number(sample.rotation?.gamma || 0),
+
     orientationAlpha: Number(sample.orientation?.alpha || 0),
     orientationBeta: Number(sample.orientation?.beta || 0),
-    orientationGamma: Number(sample.orientation?.gamma || 0)
+    orientationGamma: Number(sample.orientation?.gamma || 0),
+
+    hasQuaternion,
+    quaternionX: hasQuaternion ? Number(sample.quaternion.x) : 0,
+    quaternionY: hasQuaternion ? Number(sample.quaternion.y) : 0,
+    quaternionZ: hasQuaternion ? Number(sample.quaternion.z) : 0,
+    quaternionW: hasQuaternion ? Number(sample.quaternion.w) : 1
   });
+
   if (queue.length > 150) {
     queue.splice(0, queue.length - 150);
   }

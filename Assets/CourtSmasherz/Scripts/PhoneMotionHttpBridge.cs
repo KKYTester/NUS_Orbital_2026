@@ -408,7 +408,26 @@ namespace CourtSmasherz
             Vector3 rotationRate = new Vector3(unityEvent.rotationAlpha, unityEvent.rotationBeta, unityEvent.rotationGamma);
             Vector3 orientation = new Vector3(unityEvent.orientationBeta, unityEvent.orientationAlpha, unityEvent.orientationGamma);
 
-            gameManager.ApplyPhoneMotion(playerIndex, acceleration, rotationRate, orientation);
+            Quaternion phoneQuaternion = Quaternion.identity;
+
+            if (unityEvent.hasQuaternion)
+            {
+                phoneQuaternion = new Quaternion(
+                    unityEvent.quaternionX,
+                    unityEvent.quaternionY,
+                    unityEvent.quaternionZ,
+                    unityEvent.quaternionW
+                );
+            }
+
+            gameManager.ApplyPhoneMotion(
+                playerIndex,
+                acceleration,
+                rotationRate,
+                orientation,
+                unityEvent.hasQuaternion,
+                phoneQuaternion
+            );
 
             float accelerationMagnitude = acceleration.magnitude;
             float rotationMagnitude = rotationRate.magnitude;
@@ -620,6 +639,11 @@ namespace CourtSmasherz
             public float orientationAlpha;
             public float orientationBeta;
             public float orientationGamma;
+            public bool hasQuaternion;
+            public float quaternionX;
+            public float quaternionY;
+            public float quaternionZ;
+            public float quaternionW;
         }
     }
 }

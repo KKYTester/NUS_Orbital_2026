@@ -79,6 +79,8 @@ async function enableMotion() {
     return;
   }
 
+  await startQuaternionOrientationSensor();
+
   if (!motionListenersAttached) {
     window.addEventListener("devicemotion", onMotion);
     window.addEventListener("deviceorientation", onOrientation);
@@ -94,6 +96,59 @@ async function enableMotion() {
       sensorDebug.textContent = `${getSensorEnvironmentText()} | If using phone over http://192.168.x.x, Chrome may block motion sensors. Use HTTPS/ngrok or Android Chrome site permissions.`;
     }
   }, 2500);
+}
+
+// Following function is for setting up orientation using quarternions instead of euler angles.
+
+let latestQuaternion = null;
+let orientationSensor = null;
+
+async function startQuaternionOrientationSensor() {
+  if (!("AbsoluteOrientationSensor" in window)) {
+    console.warn("AbsoluteOrientationSensor is not available. Falling back to DeviceOrientationEvent.");
+    return false;
+  }
+
+  try {
+    if (navigator.permissions?.query) {
+      await Promise.all([
+        navigator.permissions.query({ name: "accelerometer" }),
+        navigator.permissions.query({ name: "gyroscope" }),
+        navigator.permissions.query({ name: "magnetometer" })
+      ]);
+    }
+
+    orientationSensor = new AbsoluteOrientationSensor({
+      frequency: 60,
+      referenceFrame: "device"
+    });
+
+    orientationSensor.addEventListener("reading", () => {
+      const q = orientationSensor.quaternion;
+
+      if (!q) {
+        return;
+      }
+
+      latestQuaternion = {
+        x: q[0],
+        y: q[1],
+        z: q[2],
+        w: q[3]
+      };
+    });
+
+    orientationSensor.addEventListener("error", (event) => {
+      console.warn("Orientation sensor error:", event.error?.message || event);
+    });
+
+    orientationSensor.start();
+    console.log("AbsoluteOrientationSensor started.");
+    return true;
+  } catch (error) {
+    console.warn("Could not start AbsoluteOrientationSensor:", error);
+    return false;
+  }
 }
 
 function onMotion(event) {
@@ -113,7 +168,8 @@ function onMotion(event) {
       beta: Number(event.rotationRate?.beta || 0),
       gamma: Number(event.rotationRate?.gamma || 0)
     },
-    orientation: latestSample?.orientation || { alpha: 0, beta: 0, gamma: 0 }
+    orientation: latestSample?.orientation || { alpha: 0, beta: 0, gamma: 0 },
+    quaternion: latestQuaternion,
   };
 
   smoothedSample = smoothSample(smoothedSample, latestSample);
@@ -125,7 +181,7 @@ function onMotion(event) {
     `Rot ${formatNumber(smoothedSample.rotation.alpha)}, ${formatNumber(smoothedSample.rotation.beta)}, ${formatNumber(smoothedSample.rotation.gamma)}`;
 
   if (roomCode && now - lastSentAt > 33) {
-    client.send("sensorSample", { roomCode, playerId, ...smoothedSample });
+    client.send("sensorSample", { roomCode, playerId, ...smoothedSample, quaternion: latestQuaternion});
     lastSentAt = now;
   }
 
@@ -144,12 +200,13 @@ function onOrientation(event) {
     beta: Number(event.beta || 0),
     gamma: Number(event.gamma || 0)
   };
-  latestSample = latestSample ? { ...latestSample, orientation } : {
+  latestSample = latestSample ? { ...latestSample, orientation, quaternion: latestQuaternion } : {
     playerId,
     timestamp: Date.now(),
     accel: { x: 0, y: 0, z: 0 },
     rotation: { alpha: 0, beta: 0, gamma: 0 },
-    orientation
+    orientation,
+    quaternion: latestQuaternion
   };
 
   if (!hasValidMotionSample) {

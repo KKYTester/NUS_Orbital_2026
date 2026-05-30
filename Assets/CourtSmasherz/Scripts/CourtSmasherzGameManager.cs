@@ -40,8 +40,26 @@ namespace CourtSmasherz
         public float hitWindowZ = 1.45f;
         public bool enableKeyboardTestShots = false;
 
+        [Header("Phone Racquet Rotation Mapping")]
+        public bool usePhoneRacquetRotation = true;
+
+        public bool invertPhonePitch = true;
+        public bool invertPhoneYaw = true;
+        public bool invertPhoneRoll = false;
+        public Vector3 phoneRotationOffsetEuler = Vector3.zero;
+
+        [Range(0f, 1f)]
+        public float phoneRotationSmoothing = 0.25f;
+        private Quaternion[] phoneNeutralRotations = new Quaternion[2];
+        private bool[] hasPhoneNeutralRotation = new bool[2];
+        private Quaternion[] racquetNeutralRotations = new Quaternion[2];
+        private bool[] hasRacquetNeutralRotation = new bool[2];
+
         private Quaternion playerOneRacquetBaseRotation;
         private Quaternion playerTwoRacquetBaseRotation;
+
+        private Quaternion[] phoneCalibrationOffsets = new Quaternion[2];
+        private bool[] phoneCalibrated = new bool[2];
 
         private Vector3 ballVelocity;
         private int playerOneScore;
@@ -142,20 +160,72 @@ namespace CourtSmasherz
             SetStatus($"P{shot.PlayerIndex + 1} {shot.ShotType} ({Mathf.RoundToInt(clampedPower * 100f)}%)");
         }
 
-        public void ApplyPhoneMotion(int playerIndex, Vector3 acceleration, Vector3 rotationRate, Vector3 orientation)
+        public void ApplyPhoneMotion(int playerIndex, Vector3 acceleration, Vector3 rotationRate, Vector3 orientation,
+                                    bool hasQuaternion, Quaternion phoneQuaternion)
         {
+            if (!usePhoneRacquetRotation)
+            {
+                return;
+            }
+
             Transform racquet = playerIndex == 0 ? playerOneRacquet : playerTwoRacquet;
+
             if (racquet == null)
             {
                 return;
             }
 
-            float side = playerIndex == 0 ? 1f : -1f;
-            float tiltZ = Mathf.Clamp(-orientation.z * 0.7f, -50f, 50f);
-            float tiltX = Mathf.Clamp(orientation.x * 0.35f, -35f, 35f);
-            float twistY = Mathf.Clamp(rotationRate.z * 0.12f, -35f, 35f);
-            Quaternion baseRotation = playerIndex == 0 ? playerOneRacquetBaseRotation : playerTwoRacquetBaseRotation;
-            racquet.localRotation = baseRotation * Quaternion.Euler(tiltX, side * twistY, tiltZ);
+            Quaternion rawPhoneRotation;
+
+            if (hasQuaternion)
+            {
+                    rawPhoneRotation = new Quaternion(
+                        phoneQuaternion.x,
+                        phoneQuaternion.y,
+                        -phoneQuaternion.z,
+                        -phoneQuaternion.w
+                    );
+            }
+            else
+            {
+                float pitch = invertPhonePitch ? -orientation.z : orientation.z;
+                float yaw = invertPhoneYaw ? -orientation.x : orientation.x;
+                float roll = invertPhoneRoll ? -orientation.y : orientation.y;
+
+                rawPhoneRotation = Quaternion.Euler(pitch, yaw, roll);
+            }
+
+            if (!hasPhoneNeutralRotation[playerIndex])
+            {
+                phoneNeutralRotations[playerIndex] = rawPhoneRotation;
+                racquetNeutralRotations[playerIndex] = racquet.localRotation;
+
+                hasPhoneNeutralRotation[playerIndex] = true;
+                hasRacquetNeutralRotation[playerIndex] = true;
+            }
+
+            Quaternion relativePhoneRotation =
+                Quaternion.Inverse(phoneNeutralRotations[playerIndex]) * rawPhoneRotation;
+
+            Quaternion offsetRotation = Quaternion.Euler(phoneRotationOffsetEuler);
+
+            Quaternion targetRotation =
+                racquetNeutralRotations[playerIndex] * offsetRotation * relativePhoneRotation;
+
+            racquet.localRotation = Quaternion.Slerp(
+                racquet.localRotation,
+                targetRotation,
+                phoneRotationSmoothing
+            );
+        }
+
+        public void ResetPhoneNeutralRotations()
+        {
+            hasPhoneNeutralRotation[0] = false;
+            hasPhoneNeutralRotation[1] = false;
+
+            hasRacquetNeutralRotation[0] = false;
+            hasRacquetNeutralRotation[1] = false;
         }
 
         public void ResetMatch()
@@ -198,6 +268,7 @@ namespace CourtSmasherz
             ResetBall(1, true);
             SetStatus("Both phones ready. Match started.");
             UpdateHud();
+            ResetPhoneNeutralRotations();
         }
 
         public void SetInputLocked(bool locked)
