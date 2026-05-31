@@ -104,7 +104,7 @@ namespace CourtSmasherz
                 mainMenu.ShowWaitingForSwings(false, false);
             }
 
-            SetBridgeStatus("Swing both phones once to start.");
+            SetBridgeStatus("");
         }
 
         // For restarting after a match
@@ -193,13 +193,13 @@ namespace CourtSmasherz
             else
             {
                 // Reconstruct join url from BaseUrl
-                phoneJoinUrl = $"{phoneBaseUrl}/controller.html?room={roomCode}";
+                phoneJoinUrl = $"";
             }
             lastEventId = 0;
 
             if (roomCodeText != null)
             {
-                roomCodeText.text = $"Room: {roomCode} | Phone: {phoneJoinUrl}";
+                roomCodeText.text = $"";
             }
 
             if (mainMenu != null)
@@ -207,7 +207,7 @@ namespace CourtSmasherz
                 mainMenu.SetJoinInfo(roomCode, phoneJoinUrl);
             }
 
-            SetBridgeStatus($"Open phone URL and join {roomCode}");
+            SetBridgeStatus($"");
             StartCoroutine(PollEvents());
         }
 
