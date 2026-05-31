@@ -3195,6 +3195,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 668803703}
+  - component: {fileID: 668803704}
   m_Layer: 0
   m_Name: P2 Avatar
   m_TagString: Untagged
@@ -3224,6 +3225,27 @@ Transform:
   - {fileID: 1767967045}
   m_Father: {fileID: 2131381968}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &668803704
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 668803702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f6578f5037d0d34697b8915489d6c7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CourtSmasherz.PickleballPlayerController
+  playerIndex: 1
+  homeX: 7.3
+  facingY: -90
+  autoMoveSpeed: 8
+  minZ: -4.4
+  maxZ: 4.4
+  ball: {fileID: 405539394}
+  ballController: {fileID: 405539398}
+  gameManager: {fileID: 1583913856}
 --- !u!1 &684030194
 GameObject:
   m_ObjectHideFlags: 0
@@ -4539,18 +4561,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CourtSmasherz.CourtSmasherzGameManager
   ball: {fileID: 405539394}
-  playerOneRoot: {fileID: 1753861487}
-  playerTwoRoot: {fileID: 668803703}
   scoreText: {fileID: 392705184}
   statusText: {fileID: 1548118893}
   bridge: {fileID: 1583913855}
   ballController: {fileID: 405539398}
-  minZ: -4.4
-  maxZ: 4.4
-  playerOneX: -7.3
-  playerTwoX: 7.3
   matchPoint: 7
-  autoMoveSpeed: 8
   enableKeyboardTestShots: 0
 --- !u!114 &1583913857
 MonoBehaviour:
@@ -4598,18 +4613,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CourtSmasherz.CourtSmasherzGameManager
   ball: {fileID: 0}
-  playerOneRoot: {fileID: 0}
-  playerTwoRoot: {fileID: 0}
   scoreText: {fileID: 0}
   statusText: {fileID: 0}
   bridge: {fileID: 0}
   ballController: {fileID: 0}
-  minZ: -4.4
-  maxZ: 4.4
-  playerOneX: -7.3
-  playerTwoX: 7.3
   matchPoint: 7
-  autoMoveSpeed: 8
   enableKeyboardTestShots: 0
 --- !u!1 &1586695570
 GameObject:
@@ -5200,6 +5208,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1753861487}
+  - component: {fileID: 1753861488}
   m_Layer: 0
   m_Name: P1 Avatar
   m_TagString: Untagged
@@ -5229,6 +5238,27 @@ Transform:
   - {fileID: 642730858}
   m_Father: {fileID: 2131381968}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1753861488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1753861486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f6578f5037d0d34697b8915489d6c7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CourtSmasherz.PickleballPlayerController
+  playerIndex: 0
+  homeX: -7.3
+  facingY: 90
+  autoMoveSpeed: 8
+  minZ: -4.4
+  maxZ: 4.4
+  ball: {fileID: 405539394}
+  ballController: {fileID: 405539398}
+  gameManager: {fileID: 1583913856}
 --- !u!1 &1767967044
 GameObject:
   m_ObjectHideFlags: 0
