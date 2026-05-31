@@ -19,14 +19,12 @@ namespace CourtSmasherz
         public Transform ball;
         public Transform playerOneRoot;
         public Transform playerTwoRoot;
-        public Transform playerOneRacquet;
-        public Transform playerTwoRacquet;
         public Text scoreText;
         public Text statusText;
+        public PhoneMotionHttpBridge bridge;
+        public PickleballBallController ballController;
 
         [Header("Court")]
-        public float leftOutX = -9.25f;
-        public float rightOutX = 9.25f;
         public float minZ = -4.4f;
         public float maxZ = 4.4f;
         public float playerOneX = -7.3f;
@@ -35,14 +33,8 @@ namespace CourtSmasherz
         [Header("Gameplay")]
         public int matchPoint = 7;
         public float autoMoveSpeed = 8f;
-        public float hitWindowX = 1.55f;
-        public float hitWindowZ = 1.45f;
         public bool enableKeyboardTestShots = false;
 
-        private Quaternion playerOneRacquetBaseRotation;
-        private Quaternion playerTwoRacquetBaseRotation;
-
-        private Vector3 ballVelocity;
         private int playerOneScore;
         private int playerTwoScore;
         private bool inputLocked = true;
@@ -52,14 +44,10 @@ namespace CourtSmasherz
 
         private void Start()
         {
-            if (playerOneRacquet != null)
+            if (ballController != null)
             {
-                playerOneRacquetBaseRotation = playerOneRacquet.localRotation;
-            }
-
-            if (playerTwoRacquet != null)
-            {
-                playerTwoRacquetBaseRotation = playerTwoRacquet.localRotation;
+                ballController.OnPointScored += AwardPoint;
+                ballController.OnStatusChanged += SetStatus;
             }
 
             ShowMenu();
@@ -71,8 +59,16 @@ namespace CourtSmasherz
             {
                 if (WasPressed(Keyboard.current?.rKey))
                 {
-                    ShowMenu();
+                    if (bridge != null)
+                    {
+                        bridge.ReturnToJoinMenu();
+                    }
+                    else
+                    {
+                        ShowMenu();
+                    }
                 }
+
                 return;
             }
 
@@ -83,12 +79,20 @@ namespace CourtSmasherz
             }
 
             UpdateAutomaticPlayerMovement();
-            UpdateBall();
             if (enableKeyboardTestShots)
             {
                 UpdateKeyboardTestShots();
             }
             UpdateHud();
+        }
+
+        private void OnDestroy()
+        {
+            if (ballController != null)
+            {
+                ballController.OnPointScored -= AwardPoint;
+                ballController.OnStatusChanged -= SetStatus;
+            }
         }
 
         public void ApplyShot(ShotEvent shot)
@@ -98,55 +102,12 @@ namespace CourtSmasherz
                 return;
             }
 
-            Transform racquet = shot.PlayerIndex == 0 ? playerOneRacquet : playerTwoRacquet;
-            if (racquet == null || ball == null)
+            if (ballController == null)
             {
                 return;
             }
 
-            bool nearPaddleX = Mathf.Abs(ball.position.x - racquet.position.x) <= hitWindowX;
-            bool nearPaddleZ = Mathf.Abs(ball.position.z - racquet.position.z) <= hitWindowZ;
-            if (!nearPaddleX || !nearPaddleZ)
-            {
-                SetStatus($"P{shot.PlayerIndex + 1} mistimed {shot.ShotType}");
-                return;
-            }
-
-            float side = shot.PlayerIndex == 0 ? 1f : -1f;
-            float clampedPower = Mathf.Clamp01(shot.Power);
-            float speed = Mathf.Lerp(7f, 14f, clampedPower);
-            float zCurve = Mathf.Clamp(shot.Direction + shot.Spin * 0.35f, -1f, 1f) * 4.2f;
-
-            if (shot.ShotType == ShotType.Lob)
-            {
-                zCurve *= 0.45f;
-                speed *= 0.78f;
-            }
-            else if (shot.ShotType == ShotType.Smash)
-            {
-                speed *= 1.25f;
-                zCurve *= 0.65f;
-            }
-
-            ball.position = new Vector3(racquet.position.x + side * 0.9f, 0.55f, racquet.position.z);
-            ballVelocity = new Vector3(side * speed, 0f, zCurve);
-            SetStatus($"P{shot.PlayerIndex + 1} {shot.ShotType} ({Mathf.RoundToInt(clampedPower * 100f)}%)");
-        }
-
-        public void ApplyPhoneMotion(int playerIndex, Vector3 acceleration, Vector3 rotationRate, Vector3 orientation)
-        {
-            Transform racquet = playerIndex == 0 ? playerOneRacquet : playerTwoRacquet;
-            if (racquet == null)
-            {
-                return;
-            }
-
-            float side = playerIndex == 0 ? 1f : -1f;
-            float tiltZ = Mathf.Clamp(-orientation.z * 0.7f, -50f, 50f);
-            float tiltX = Mathf.Clamp(orientation.x * 0.35f, -35f, 35f);
-            float twistY = Mathf.Clamp(rotationRate.z * 0.12f, -35f, 35f);
-            Quaternion baseRotation = playerIndex == 0 ? playerOneRacquetBaseRotation : playerTwoRacquetBaseRotation;
-            racquet.localRotation = baseRotation * Quaternion.Euler(tiltX, side * twistY, tiltZ);
+            ballController.ApplyShot(shot);
         }
 
         public void ResetMatch()
@@ -155,7 +116,10 @@ namespace CourtSmasherz
             playerTwoScore = 0;
             CurrentPhase = GamePhase.Playing;
             SetInputLocked(false);
-            ResetBall(1, true);
+            if (ballController != null)
+            {
+                ballController.ResetBall(1, true);
+            }
             SetStatus(enableKeyboardTestShots
                 ? "Match started. Keyboard test shots are enabled."
                 : "Match started. Join the Unity room from your phone controller.");
@@ -168,8 +132,11 @@ namespace CourtSmasherz
             playerTwoScore = 0;
             CurrentPhase = GamePhase.Menu;
             SetInputLocked(true);
-            ResetBall(1, false);
-            SetStatus("Scan the QR code, join both phones, then press Start.");
+            if (ballController != null)
+            {
+                ballController.ResetBall(1, false);
+            }
+            SetStatus("");
             UpdateHud();
         }
 
@@ -177,16 +144,26 @@ namespace CourtSmasherz
         {
             CurrentPhase = GamePhase.WaitingForSwings;
             SetInputLocked(true);
-            ResetBall(1, false);
-            SetStatus("Waiting for P1 and P2 to swing once.");
+            if (ballController != null)
+            {
+                ballController.ResetBall(1, false);
+            }
+            SetStatus("");
             UpdateHud();
         }
 
         public void BeginMatch()
         {
+            if (bridge != null)
+            {
+                bridge.ResetRacquetNeutralRotations();
+            }
             CurrentPhase = GamePhase.Playing;
             SetInputLocked(false);
-            ResetBall(1, true);
+            if (ballController != null)
+            {
+                ballController.ResetBall(1, true);
+            }
             SetStatus("Both phones ready. Match started.");
             UpdateHud();
         }
@@ -209,7 +186,8 @@ namespace CourtSmasherz
                 return;
             }
 
-            bool ballComingTowardPlayer = playerIndex == 0 ? ballVelocity.x < 0f : ballVelocity.x > 0f;
+            Vector3 currentBallVelocity = ballController != null ? ballController.Velocity : Vector3.zero;
+bool        ballComingTowardPlayer = playerIndex == 0 ? currentBallVelocity.x < 0f : currentBallVelocity.x > 0f;
             bool ballOnPlayerHalf = playerIndex == 0 ? ball.position.x < 0f : ball.position.x > 0f;
             float targetZ = ballComingTowardPlayer || ballOnPlayerHalf
                 ? Mathf.Clamp(ball.position.z, minZ, maxZ)
@@ -218,33 +196,6 @@ namespace CourtSmasherz
             Vector3 target = new Vector3(playerIndex == 0 ? playerOneX : playerTwoX, playerRoot.position.y, targetZ);
             playerRoot.position = Vector3.Lerp(playerRoot.position, target, Time.deltaTime * autoMoveSpeed);
             playerRoot.rotation = Quaternion.Euler(0f, playerIndex == 0 ? 90f : -90f, 0f);
-        }
-
-        private void UpdateBall()
-        {
-            if (ball == null)
-            {
-                return;
-            }
-
-            ball.position += ballVelocity * Time.deltaTime;
-            ball.Rotate(Vector3.forward, ballVelocity.magnitude * 80f * Time.deltaTime, Space.World);
-
-            if (ball.position.z < minZ || ball.position.z > maxZ)
-            {
-                ball.position = new Vector3(ball.position.x, ball.position.y, Mathf.Clamp(ball.position.z, minZ, maxZ));
-                ballVelocity.z *= -0.9f;
-                SetStatus("Ball bounced off sideline");
-            }
-
-            if (ball.position.x < leftOutX)
-            {
-                AwardPoint(1);
-            }
-            else if (ball.position.x > rightOutX)
-            {
-                AwardPoint(0);
-            }
         }
 
         private void AwardPoint(int playerIndex)
@@ -267,7 +218,10 @@ namespace CourtSmasherz
             }
             else
             {
-                ResetBall(playerIndex == 0 ? 1 : -1, true);
+                if (ballController != null)
+                {
+                    ballController.ResetBall(playerIndex == 0 ? 1 : -1, true);   
+                }
             }
         }
 
@@ -276,19 +230,6 @@ namespace CourtSmasherz
             int scorer = lastScorer == 0 ? playerOneScore : playerTwoScore;
             int other = lastScorer == 0 ? playerTwoScore : playerOneScore;
             return scorer >= matchPoint && scorer - other >= 2;
-        }
-
-        private void ResetBall(int direction, bool serve)
-        {
-            if (ball == null)
-            {
-                return;
-            }
-
-            ball.position = new Vector3(0f, 0.55f, 0f);
-            ballVelocity = serve
-                ? new Vector3(direction * 6.5f, 0f, Random.value > 0.5f ? 1.8f : -1.8f)
-                : Vector3.zero;
         }
 
         private void UpdateKeyboardTestShots()

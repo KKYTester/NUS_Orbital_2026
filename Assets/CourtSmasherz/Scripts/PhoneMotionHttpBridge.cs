@@ -21,6 +21,8 @@ namespace CourtSmasherz
         public Text bridgeStatusText;
         public Text playerOneMotionStatusText;
         public Text playerTwoMotionStatusText;
+        public PickleballRacquetController playerOneRacquetController;
+        public PickleballRacquetController playerTwoRacquetController;
 
         [Header("Server")]
         public string serverBaseUrl = "http://localhost:3000";
@@ -66,7 +68,7 @@ namespace CourtSmasherz
             if (mainMenu != null)
             {
                 mainMenu.SetJoinInfo(string.Empty, string.Empty);
-                mainMenu.ShowMenu();
+                mainMenu.HideMenu();
             }
 
             StartCoroutine(EnsureServerThenCreateRoom());
@@ -102,7 +104,32 @@ namespace CourtSmasherz
                 mainMenu.ShowWaitingForSwings(false, false);
             }
 
-            SetBridgeStatus("Swing both phones once to start.");
+            SetBridgeStatus("");
+        }
+
+        // For restarting after a match
+        public void ReturnToJoinMenu()
+        {
+            readinessCheckActive = false;
+            p1Ready = false;
+            p2Ready = false;
+
+            if (gameManager != null)
+            {
+                gameManager.ShowMenu();
+            }
+
+            SetJoinHudVisible(true);
+
+            SetPlayerMotionStatus(0, string.Empty, false);
+            SetPlayerMotionStatus(1, string.Empty, false);
+
+            if (mainMenu != null)
+            {
+                mainMenu.ShowMenu();
+            }
+
+            SetBridgeStatus("Join both phones, then press Start.");
         }
 
         private IEnumerator EnsureServerThenCreateRoom()
@@ -166,22 +193,21 @@ namespace CourtSmasherz
             else
             {
                 // Reconstruct join url from BaseUrl
-                phoneJoinUrl = $"{phoneBaseUrl}/controller.html?room={roomCode}";
+                phoneJoinUrl = $"";
             }
             lastEventId = 0;
 
             if (roomCodeText != null)
             {
-                roomCodeText.text = $"Room: {roomCode} | Phone: {phoneJoinUrl}";
+                roomCodeText.text = $"";
             }
 
             if (mainMenu != null)
             {
                 mainMenu.SetJoinInfo(roomCode, phoneJoinUrl);
-                mainMenu.ShowMenu();
             }
 
-            SetBridgeStatus($"Open phone URL and join {roomCode}");
+            SetBridgeStatus($"");
             StartCoroutine(PollEvents());
         }
 
@@ -384,7 +410,32 @@ namespace CourtSmasherz
             Vector3 rotationRate = new Vector3(unityEvent.rotationAlpha, unityEvent.rotationBeta, unityEvent.rotationGamma);
             Vector3 orientation = new Vector3(unityEvent.orientationBeta, unityEvent.orientationAlpha, unityEvent.orientationGamma);
 
-            gameManager.ApplyPhoneMotion(playerIndex, acceleration, rotationRate, orientation);
+            Quaternion phoneQuaternion = Quaternion.identity;
+
+            if (unityEvent.hasQuaternion)
+            {
+                phoneQuaternion = new Quaternion(
+                    unityEvent.quaternionX,
+                    unityEvent.quaternionY,
+                    unityEvent.quaternionZ,
+                    unityEvent.quaternionW
+                );
+            }
+
+            PickleballRacquetController racquetController =
+                playerIndex == 0 ? playerOneRacquetController : playerTwoRacquetController;
+
+            if (gameManager != null && (gameManager.CurrentPhase == CourtSmasherzGameManager.GamePhase.Playing ||
+                gameManager.CurrentPhase == CourtSmasherzGameManager.GamePhase.Finished) && racquetController != null)
+            {
+                racquetController.ApplyPhoneMotion(
+                    acceleration,
+                    rotationRate,
+                    orientation,
+                    unityEvent.hasQuaternion,
+                    phoneQuaternion
+                );
+            }
 
             float accelerationMagnitude = acceleration.magnitude;
             float rotationMagnitude = rotationRate.magnitude;
@@ -425,6 +476,19 @@ namespace CourtSmasherz
             {
                 gameManager.ApplyShot(new ShotEvent(playerIndex, shotType, Mathf.Max(0.25f, power), direction, spin));
                 SetPlayerMotionStatus(playerIndex, $"Motion swing detected: {shotType}", true);
+            }
+        }
+
+        public void ResetRacquetNeutralRotations()
+        {
+            if (playerOneRacquetController != null)
+            {
+                playerOneRacquetController.ResetNeutralRotation();
+            }
+
+            if (playerTwoRacquetController != null)
+            {
+                playerTwoRacquetController.ResetNeutralRotation();
             }
         }
 
@@ -596,6 +660,11 @@ namespace CourtSmasherz
             public float orientationAlpha;
             public float orientationBeta;
             public float orientationGamma;
+            public bool hasQuaternion;
+            public float quaternionX;
+            public float quaternionY;
+            public float quaternionZ;
+            public float quaternionW;
         }
     }
 }
