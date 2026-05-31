@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace CourtSmasherz
@@ -25,6 +26,15 @@ namespace CourtSmasherz
         private Quaternion initialLocalRotation;
 
         public Transform HitTransform => transform;
+
+        /*
+            Following is for the ball controller script (PickleballBallController.cs)
+            get; -> Others scripts can "get"/read the variable
+            private set; -> Only this script can set the variable
+        */
+        public float phoneAccelerationMagnitude{ get; private set; }
+
+        private const float irl_g = 9.81f; // in ms^-2
 
         private void Awake()
         {
@@ -84,12 +94,32 @@ namespace CourtSmasherz
                 targetRotation,
                 phoneRotationSmoothing
             );
+            // For ball controller script (PickleballBallController.cs) to use:
+            phoneAccelerationMagnitude = phoneAccelerationMagnitudeCaculator(acceleration.z, rawPhoneRotation);
         }
 
         public void ResetNeutralRotation()
         {
             hasPhoneNeutralRotation = false;
             transform.localRotation = initialLocalRotation;
+        }
+
+        // Calculation of phone acceleration with gravity compensation
+        private float phoneAccelerationMagnitudeCaculator(float rawAccelerationMagnitude, Quaternion rawPhoneRotation)
+        {
+            // Vector of phone orientation with respect to real world frame
+            // irl east = +ve x-axis; irl north = +ve y-axis; irl down = +ve z-axis
+            // Back of phone is where this vector is pointing
+            Vector3 phoneVector = rawPhoneRotation * Vector3.forward;
+
+            // Following's theta is the angle between phoneVector and z-axis
+            float cos_theta = Vector3.Dot(phoneVector, Vector3.forward)
+            / phoneVector.magnitude; /*magnitude of Vector3.foward omitted because its just 1*/
+            // Magnitude of the component of accelerationVector that is affected by gravity
+            float gComponent = irl_g * cos_theta;
+
+            float gravityCompensatedAccelerationMagnitude = rawAccelerationMagnitude - gComponent;
+            return gravityCompensatedAccelerationMagnitude;
         }
     }
 }
