@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace CourtSmasherz
 {
@@ -8,6 +9,7 @@ namespace CourtSmasherz
         [Header("References")]
         public Transform playerOneRacquet;
         public Transform playerTwoRacquet;
+        public CourtSmasherzGameManager gameManger;
 
         [Header("Court Bounds")]
         public float leftOutX = -9.25f;
@@ -16,8 +18,7 @@ namespace CourtSmasherz
         public float maxZ = 4.4f;
 
         [Header("Hit Detection")]
-        public float hitWindowX = 1.55f;
-        public float hitWindowZ = 1.45f;
+        public float hitStrengthMultiplier = 1.0f;
 
         private Vector3 ballVelocity;
 
@@ -25,6 +26,13 @@ namespace CourtSmasherz
 
         public Action<int> OnPointScored;
         public Action<string> OnStatusChanged;
+
+        private Rigidbody rb;
+
+        private void Start()
+        {
+            rb = GetComponent<Rigidbody>();
+        }
 
         private void Update()
         {
@@ -91,29 +99,20 @@ namespace CourtSmasherz
 
         private void UpdateBall()
         {
-            // transform.position += ballVelocity * Time.deltaTime;
-            // transform.Rotate(Vector3.forward, ballVelocity.magnitude * 80f * Time.deltaTime, Space.World);
-
-            // if (transform.position.z < minZ || transform.position.z > maxZ)
-            // {
-            //     transform.position = new Vector3(
-            //         transform.position.x,
-            //         transform.position.y,
-            //         Mathf.Clamp(transform.position.z, minZ, maxZ)
-            //     );
-
-            //     ballVelocity.z *= -0.9f;
-            //     OnStatusChanged?.Invoke("Ball bounced off sideline");
-            // }
-
-            // if (transform.position.x < leftOutX)
-            // {
-            //     OnPointScored?.Invoke(1);
-            // }
-            // else if (transform.position.x > rightOutX)
-            // {
-            //     OnPointScored?.Invoke(0);
-            // }
+            if (gameManger.CurrentPhase != CourtSmasherzGameManager.GamePhase.Playing)
+            {
+                return;
+            }
+            if (Keyboard.current.digit1Key.wasPressedThisFrame)
+            {
+                transform.position = new Vector3(-6.7f, 3f, 0f);
+                rb.linearVelocity = Vector3.zero;
+            }
+            if (Keyboard.current.digit2Key.wasPressedThisFrame)
+            {
+                transform.position = new Vector3(6.7f, 3f, 0f);
+                rb.linearVelocity = Vector3.zero;
+            }
         }
 
         private void OnTriggerEnter(Collider other)
@@ -127,15 +126,13 @@ namespace CourtSmasherz
                 return;
             }
             string racket = null;
-            if (other.CompareTag("P1_Racket"))
+            if (other.CompareTag("P1_Racket") || other.CompareTag("P2_Racket"))
             {
-                racket = "P1 RACKET INFO";
-            }
-            if (other.CompareTag("P2_Racket"))
-            {
-                racket = "P2 RACKET INFO";
-            }
-            Debug.Log($"{racket}: {collided_racket.phoneAccelerationMagnitude}");
+                float strength = collided_racket.phoneAccelerationMagnitude;
+                Vector3 direction = collided_racket.phoneAccelerationDirection;
+                rb.AddForce(direction * strength * hitStrengthMultiplier, ForceMode.Impulse);
+                Debug.Log($"{racket}: {strength} || {direction}");
+            }   
         }
     }
 }

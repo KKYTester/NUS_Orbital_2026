@@ -33,6 +33,7 @@ namespace CourtSmasherz
             private set; -> Only this script can set the variable
         */
         public float phoneAccelerationMagnitude{ get; private set; }
+        public Vector3 phoneAccelerationDirection{ get; private set;}
 
         private const float irl_g = 9.81f; // in ms^-2
 
@@ -96,6 +97,7 @@ namespace CourtSmasherz
             );
             // For ball controller script (PickleballBallController.cs) to use:
             phoneAccelerationMagnitude = phoneAccelerationMagnitudeCaculator(acceleration.z, rawPhoneRotation);
+            phoneAccelerationDirection = transform.rotation * Vector3.forward;
         }
 
         public void ResetNeutralRotation()

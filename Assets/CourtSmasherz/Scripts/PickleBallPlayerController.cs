@@ -34,7 +34,16 @@ namespace CourtSmasherz
                 return;
             }
 
-            float targetZ = Mathf.Clamp(ball.position.z, minZ, maxZ);
+            // Slight offset so player positions racket infront of ball
+            float targetZ;
+            if (playerIndex == 0)
+            {
+                targetZ = Mathf.Clamp(ball.position.z + 0.65f, minZ, maxZ);
+            } else
+            {
+                targetZ = Mathf.Clamp(ball.position.z - 0.65f, minZ, maxZ);
+            }
+            
             Vector3 target = new Vector3(homeX, transform.position.y, targetZ);
             transform.position = Vector3.Lerp(
                 transform.position,
