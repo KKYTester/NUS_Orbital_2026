@@ -975,16 +975,13 @@ MonoBehaviour:
   playerIndex: 1
   homeX: 6
   facingY: -90
-  autoMoveSpeed: 5
+  autoMoveSpeed: 8
   predictedPointTolerance: 0.2
-  maxBallHittableHeight: 2
-  minBallHittableHeight: 0.1
   minZ: -3.2
   maxZ: 3.2
-  racketTransform: {fileID: 1995823891}
   ball: {fileID: 405539394}
   ballController: {fileID: 405539398}
-  trajectory: {fileID: 405539400}
+  trajectory: {fileID: 0}
   gameManager: {fileID: 1583913856}
 --- !u!1 &260991435
 GameObject:
@@ -1774,7 +1771,6 @@ MonoBehaviour:
   collisionMask:
     serializedVersion: 2
     m_Bits: 192
-  IsHit: 0
 --- !u!1 &416699078
 GameObject:
   m_ObjectHideFlags: 0
@@ -4872,16 +4868,13 @@ MonoBehaviour:
   playerIndex: 0
   homeX: -6
   facingY: 90
-  autoMoveSpeed: 2
+  autoMoveSpeed: 8
   predictedPointTolerance: 0.2
-  maxBallHittableHeight: 2
-  minBallHittableHeight: 0.1
   minZ: -3.2
   maxZ: 3.2
-  racketTransform: {fileID: 260991436}
   ball: {fileID: 405539394}
   ballController: {fileID: 405539398}
-  trajectory: {fileID: 405539400}
+  trajectory: {fileID: 0}
   gameManager: {fileID: 1583913856}
 --- !u!1 &1754638000
 GameObject:

@@ -14,8 +14,14 @@ public class BallBounceTrajectory : MonoBehaviour
     public LayerMask collisionMask;
 
     // Track no. of bounces after racket hit
-    int bounceCount = 0;
-    private int maxBounceCount = 1;
+    private int bounceCount = 0;
+    private const int maxBounceCount = 1;
+    private bool CanDraw = false;
+
+    // Variables for player movement controller to determine point to move to
+    public List<Vector3> BallPredictedPoints{ get; private set;}
+    [HideInInspector]
+    public bool IsHit = false;
 
     void Update()
     {
@@ -35,18 +41,20 @@ public class BallBounceTrajectory : MonoBehaviour
             {
                 break;
             }
-            points.Add(position);
-
+            if (IsValidPoint(position))
+            {
+                points.Add(position);
+            }
             Vector3 nextVelocity = velocity + Physics.gravity * timeStep;
             Vector3 nextPosition = position + nextVelocity * timeStep;
 
             Vector3 direction = nextPosition - position;
             float distance = direction.magnitude;
 
-            if (Physics.SphereCast(position, ballRadius, direction.normalized, out RaycastHit hit, distance, collisionMask, QueryTriggerInteraction.Ignore))
+            if (distance > 0.0001f &&
+                Physics.SphereCast(position, ballRadius, direction.normalized, out RaycastHit hit, distance, collisionMask, QueryTriggerInteraction.Ignore))
             {
                 bounceCount++;
-                Debug.Log(bounceCount);
                 position = hit.point + hit.normal * ballRadius;
 
                 // Multiply vertical velocity by bounce multiplier
@@ -65,8 +73,13 @@ public class BallBounceTrajectory : MonoBehaviour
                 position = nextPosition;
                 velocity = nextVelocity;
             }
+        }
+        if (CanDraw)
+        {
+            BallPredictedPoints = new List<Vector3>(points);
             lineRenderer.positionCount = points.Count;
             lineRenderer.SetPositions(points.ToArray());
+            CanDraw = false;
         }
     }
 
@@ -76,7 +89,14 @@ public class BallBounceTrajectory : MonoBehaviour
         {
             // Reset bounces no. tracker when hit by racket
             bounceCount = 0;
-            Debug.Log(bounceCount);
+            CanDraw = true;
+            IsHit = true; // For player controller to reset after movement
         }
+    }
+
+    // Helper function for checking that a point is not infinity
+    private bool IsValidPoint(Vector3 point)
+    {
+        return float.IsFinite(point.x) && float.IsFinite(point.y) && float.IsFinite(point.z);
     }
 }
