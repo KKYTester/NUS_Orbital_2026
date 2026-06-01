@@ -27,6 +27,10 @@ namespace CourtSmasherz
         public Action<int> OnPointScored;
         public Action<string> OnStatusChanged;
 
+        [Header("Debug")]
+        public Vector3 p1BallSpawnLocation = new Vector3(-5.4f, 3f, -0.378f);
+        public Vector3 p2BallSpawnLocation = new Vector3(5.4f, 3f, 0.378f);
+
         private Rigidbody rb;
 
         private void Start()
@@ -105,34 +109,14 @@ namespace CourtSmasherz
             }
             if (Keyboard.current.digit1Key.wasPressedThisFrame)
             {
-                transform.position = new Vector3(-5.4f, 3f, 0f);
+                transform.position = p1BallSpawnLocation;
                 rb.linearVelocity = Vector3.zero;
             }
             if (Keyboard.current.digit2Key.wasPressedThisFrame)
             {
-                transform.position = new Vector3(5.4f, 3f, 0f);
+                transform.position = p2BallSpawnLocation;
                 rb.linearVelocity = Vector3.zero;
             }
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-            Debug.Log($"Collided with {other.tag}");
-
-            PickleballRacquetController collided_racket = other.GetComponentInParent<PickleballRacquetController>();
-            if (collided_racket == null)
-            {
-                Debug.Log("No RacketController");
-                return;
-            }
-            string racket = null;
-            if (other.CompareTag("P1_Racket") || other.CompareTag("P2_Racket"))
-            {
-                float strength = collided_racket.phoneAccelerationMagnitude;
-                Vector3 direction = collided_racket.phoneAccelerationDirection;
-                rb.AddForce(direction * strength * hitStrengthMultiplier, ForceMode.Impulse);
-                Debug.Log($"{racket}: {strength} || {direction}");
-            }   
         }
     }
 }

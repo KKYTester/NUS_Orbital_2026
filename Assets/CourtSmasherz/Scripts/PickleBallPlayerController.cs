@@ -38,10 +38,10 @@ namespace CourtSmasherz
             float targetZ;
             if (playerIndex == 0)
             {
-                targetZ = Mathf.Clamp(ball.position.z + 0.65f, minZ, maxZ);
+                targetZ = Mathf.Clamp(ball.position.z + 0.378f, minZ, maxZ);
             } else
             {
-                targetZ = Mathf.Clamp(ball.position.z - 0.65f, minZ, maxZ);
+                targetZ = Mathf.Clamp(ball.position.z - 0.378f, minZ, maxZ);
             }
             
             Vector3 target = new Vector3(homeX, transform.position.y, targetZ);
