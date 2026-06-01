@@ -105,12 +105,12 @@ namespace CourtSmasherz
             }
             if (Keyboard.current.digit1Key.wasPressedThisFrame)
             {
-                transform.position = new Vector3(-6.7f, 3f, 0f);
+                transform.position = new Vector3(-5.4f, 3f, 0f);
                 rb.linearVelocity = Vector3.zero;
             }
             if (Keyboard.current.digit2Key.wasPressedThisFrame)
             {
-                transform.position = new Vector3(6.7f, 3f, 0f);
+                transform.position = new Vector3(5.4f, 3f, 0f);
                 rb.linearVelocity = Vector3.zero;
             }
         }
