@@ -976,13 +976,13 @@ MonoBehaviour:
   playerIndex: 1
   homeX: 6
   facingY: -90
-  autoMoveSpeed: 5
-  predictedPointTolerance: 0.2
+  autoMoveSpeed: 2
+  predictedPointTolerance: 1
   maxBallHittableHeight: 2
-  minBallHittableHeight: 0.1
+  minBallHittableHeight: 0
   minZ: -3.2
   maxZ: 3.2
-  racketTransform: {fileID: 1995823891}
+  racketTransform: {fileID: 1116227554}
   ball: {fileID: 405539394}
   ballController: {fileID: 405539398}
   trajectory: {fileID: 405539400}
@@ -5022,12 +5022,12 @@ MonoBehaviour:
   homeX: -6
   facingY: 90
   autoMoveSpeed: 2
-  predictedPointTolerance: 0.2
+  predictedPointTolerance: 1
   maxBallHittableHeight: 2
-  minBallHittableHeight: 0.1
+  minBallHittableHeight: 0
   minZ: -3.2
   maxZ: 3.2
-  racketTransform: {fileID: 260991436}
+  racketTransform: {fileID: 332864781}
   ball: {fileID: 405539394}
   ballController: {fileID: 405539398}
   trajectory: {fileID: 405539400}
