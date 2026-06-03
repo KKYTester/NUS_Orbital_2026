@@ -950,6 +950,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1116227554}
   - {fileID: 1914235274}
   - {fileID: 1736940798}
   - {fileID: 1064500555}
@@ -999,7 +1000,7 @@ GameObject:
   - component: {fileID: 260991438}
   m_Layer: 0
   m_Name: Racquet Pivot
-  m_TagString: P1_Racket
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1039,7 +1040,6 @@ MonoBehaviour:
   phoneRotationOffsetEuler: {x: 0, y: 0, z: 0}
   phoneRotationSmoothing: 0.25
   useQuaternionOrientation: 1
-  hitStrengthMultiplier: 1
 --- !u!65 &260991438
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1061,6 +1061,80 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.74, y: 1.06, z: 0.59}
   m_Center: {x: 0, y: 0.55, z: 0}
+--- !u!1 &332864780
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 332864781}
+  - component: {fileID: 332864783}
+  - component: {fileID: 332864782}
+  m_Layer: 0
+  m_Name: RacketHitbox
+  m_TagString: P1_Racket
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &332864781
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 332864780}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.85, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1753861487}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &332864782
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 332864780}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 1
+  m_Height: 3
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &332864783
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 332864780}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed08e41c7df9c504397a71d9c39f0461, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RacketForceApplier
+  forceModeSelector: 1
+  hitStrengthMultiplier: 0.2
+  direction: {x: 0, y: 0, z: 0}
+  yMulti: 0.2
+  zMulti: 0.5
+  racket: {fileID: 260991437}
 --- !u!1 &351003082
 GameObject:
   m_ObjectHideFlags: 0
@@ -1925,17 +1999,17 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: d2602df0b43e0d545bf6da12292f00f3,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 15
+      value: 6.745094
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d2602df0b43e0d545bf6da12292f00f3,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 15
+      value: 6.745094
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d2602df0b43e0d545bf6da12292f00f3,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 15
+      value: 6.745094
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d2602df0b43e0d545bf6da12292f00f3,
         type: 3}
@@ -3536,6 +3610,80 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &1116227553
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1116227554}
+  - component: {fileID: 1116227556}
+  - component: {fileID: 1116227555}
+  m_Layer: 0
+  m_Name: RacketHitbox
+  m_TagString: P2_Racket
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1116227554
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1116227553}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.85, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 234881476}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &1116227555
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1116227553}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 1
+  m_Height: 3
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1116227556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1116227553}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed08e41c7df9c504397a71d9c39f0461, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RacketForceApplier
+  forceModeSelector: 1
+  hitStrengthMultiplier: 0.2
+  direction: {x: 0, y: 0, z: 0}
+  yMulti: 0.2
+  zMulti: 0.5
+  racket: {fileID: 1995823892}
 --- !u!1 &1148275671
 GameObject:
   m_ObjectHideFlags: 0
@@ -4847,6 +4995,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 332864781}
   - {fileID: 76239442}
   - {fileID: 606368904}
   - {fileID: 351045426}
@@ -5322,17 +5471,17 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: d2602df0b43e0d545bf6da12292f00f3,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 15
+      value: 6.745094
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d2602df0b43e0d545bf6da12292f00f3,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 15
+      value: 6.745094
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d2602df0b43e0d545bf6da12292f00f3,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 15
+      value: 6.745094
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d2602df0b43e0d545bf6da12292f00f3,
         type: 3}
@@ -5468,7 +5617,6 @@ MonoBehaviour:
   phoneRotationOffsetEuler: {x: 0, y: 0, z: 0}
   phoneRotationSmoothing: 0.25
   useQuaternionOrientation: 1
-  hitStrengthMultiplier: 1
 --- !u!65 &1995823893
 BoxCollider:
   m_ObjectHideFlags: 0

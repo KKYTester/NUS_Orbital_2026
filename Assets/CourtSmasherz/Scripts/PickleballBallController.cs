@@ -103,10 +103,10 @@ namespace CourtSmasherz
 
         private void UpdateBall()
         {
-            if (gameManger.CurrentPhase != CourtSmasherzGameManager.GamePhase.Playing)
-            {
-                return;
-            }
+            // if (gameManger.CurrentPhase != CourtSmasherzGameManager.GamePhase.Playing)
+            // {
+            //     return;
+            // }
             if (Keyboard.current.digit1Key.wasPressedThisFrame)
             {
                 transform.position = p1BallSpawnLocation;

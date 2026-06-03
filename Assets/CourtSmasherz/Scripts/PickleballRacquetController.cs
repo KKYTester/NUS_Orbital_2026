@@ -27,11 +27,8 @@ namespace CourtSmasherz
 
         public Transform HitTransform => transform;
 
-        [Header("Hit Strength")]
-        public float hitStrengthMultiplier = 1.0f;
-
         /*
-            Following is for the ball controller script (PickleballBallController.cs)
+            Following is for the racket force appliers to use
             get; -> Others scripts can "get"/read the variable
             private set; -> Only this script can set the variable
         */
@@ -125,18 +122,6 @@ namespace CourtSmasherz
 
             float gravityCompensatedAccelerationMagnitude = rawAccelerationMagnitude - gComponent;
             return gravityCompensatedAccelerationMagnitude;
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-            if (other.CompareTag("Ball"))
-            {
-                Rigidbody ballRigidBody = other.GetComponent<Rigidbody>();
-                float strength = phoneAccelerationMagnitude;
-                Vector3 direction = phoneAccelerationDirection;
-                ballRigidBody.AddForce(direction * strength * hitStrengthMultiplier, ForceMode.Impulse);
-                Debug.Log($"{this.tag}: {strength} || {direction}");
-            }
         }
     }
 }
