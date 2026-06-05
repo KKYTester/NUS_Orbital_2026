@@ -31,8 +31,8 @@ namespace CourtSmasherz
         public Vector3 gravity => ballGravity * Vector3.down;
 
         [Header("Debug")]
-        public Vector3 p1BallSpawnLocation = new Vector3(-5.4f, 3f, -0.378f);
-        public Vector3 p2BallSpawnLocation = new Vector3(5.4f, 3f, 0.378f);
+        public Vector3 p1BallSpawnLocation => new Vector3 (playerOneRacquet.position.x, playerOneRacquet.position.y + 1, playerOneRacquet.position.z);
+        public Vector3 p2BallSpawnLocation => new Vector3(playerTwoRacquet.position.x, playerTwoRacquet.position.y + 1, playerTwoRacquet.position.z);
 
         private Rigidbody rb;
 

@@ -1690,8 +1690,6 @@ MonoBehaviour:
   maxZ: 4.4
   hitStrengthMultiplier: 1
   ballGravity: 9.81
-  p1BallSpawnLocation: {x: -5.4, y: 3, z: -0.378}
-  p2BallSpawnLocation: {x: 5.4, y: 3, z: 0.378}
 --- !u!54 &405539399
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3654,7 +3652,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1059263980}
   m_Layer: 0
-  m_Name: PlayerModel (1)
+  m_Name: PlayerModel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

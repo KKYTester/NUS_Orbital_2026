@@ -46,13 +46,18 @@ namespace CourtSmasherz
             if (playerIndex == 0)
             {
                 Vector3 P1TargetBuff;
-                if (trajectory.IsHit && FindMovementPoint(out P1TargetBuff, racketTransform.position) && P1TargetBuff.x < -1.5f)
+                if (trajectory.IsHit && FindMovementPoint(out P1TargetBuff, racketTransform.position))
                 {
-                    // racket offset from player pos
                     Vector3 offset = racketTransform.position - transform.position;
-                    // offset target position by racket's relative position
-                    P1Target = new Vector3(P1TargetBuff.x - offset.x,
-                        transform.position.y, P1TargetBuff.z - offset.z);
+
+                    P1Target = new Vector3(
+                        P1TargetBuff.x - offset.x,
+                        transform.position.y,
+                        P1TargetBuff.z - offset.z
+                    );
+
+                    P1Target.z = Mathf.Clamp(P1Target.z, minZ, maxZ);
+
                     trajectory.IsHit = false;
                 }
 
@@ -66,27 +71,37 @@ namespace CourtSmasherz
         private bool FindMovementPoint(out Vector3 target, Vector3 currPos)
         {
             target = transform.position;
-            if (trajectory.BallPredictedPoints == null)
-            {
-                return false;
-            }
 
-            float reachableRadius;
-            float horizontalDist;
+            if (trajectory.BallPredictedPoints == null)
+                return false;
+
             Vector2 currPosXZ = new Vector2(currPos.x, currPos.z);
+
             for (int i = 0; i < trajectory.BallPredictedPoints.Count; i++)
             {
-                reachableRadius = trajectory.timeStep * autoMoveSpeed * i;
-                Vector2 ballPosXZ = new Vector2(trajectory.BallPredictedPoints[i].x, trajectory.BallPredictedPoints[i].z);
-                horizontalDist = Vector2.Distance(currPosXZ, ballPosXZ);
-                
-                if (horizontalDist < reachableRadius + predictedPointTolerance
-                    && withinHittableHeight(trajectory.BallPredictedPoints[i].y))
+                Vector3 predictedPoint = trajectory.BallPredictedPoints[i];
+
+                // Check side first
+                if (predictedPoint.x >= -2.57f)
+                    continue;
+
+                // Check height
+                if (!withinHittableHeight(predictedPoint.y))
+                    continue;
+
+                Vector2 ballPosXZ = new Vector2(predictedPoint.x, predictedPoint.z);
+                float horizontalDist = Vector2.Distance(currPosXZ, ballPosXZ);
+
+                float timeUntilPoint = trajectory.timeStep * i;
+                float reachableRadius = autoMoveSpeed * timeUntilPoint;
+
+                if (horizontalDist <= reachableRadius + predictedPointTolerance)
                 {
-                    target = trajectory.BallPredictedPoints[i];
+                    target = predictedPoint;
                     return true;
                 }
             }
+
             return false;
         }
 

@@ -87,12 +87,12 @@ public class RacketForceApplier : MonoBehaviour
             return;
         }
         Vector3 boxFront = transform.position + transform.forward * boxSizeX/2.0f;
-        float distFromColliderFront = other.transform.position.x - boxFront.x;
-        Debug.Log($"boxFront: {boxFront} | ballX: {other.transform.position.x}");
+        float distFromColliderFront = Mathf.Abs(other.transform.position.x - boxFront.x);
         // Find how much of the capsule's radius has been covered
         float ratio = distFromColliderFront / boxSizeX;
-        float shotYaw = shotYawDecider(ratio);
-        if (shotYaw == 180)
+        Debug.Log(ratio);
+        float shotYaw;
+        if (shotYawDecider(ratio, out shotYaw) == false)
         {
             return; // miss
         }
@@ -128,27 +128,32 @@ public class RacketForceApplier : MonoBehaviour
     }
 
     // Returns shot yaw angle in degrees, taking front of hitbox as 0. To the left is -ve, to the right is +ve 
-    private float shotYawDecider(float ratio)
+    private bool shotYawDecider(float ratio, out float shotYaw)
     {
         if (ratio < 0.1)
         {
             // Early = Crosscourt hit
-            return map(ratio, 0.0f, 0.1f, -30, -25);
+            shotYaw = map(ratio, 0.0f, 0.1f, -30, -25);
+            return true;
         } else if (ratio < 0.4)
         {
             // Slightly early = Normal(?) hit
-            return map(ratio, 0.1f, 0.4f, -20, -10);
+            shotYaw = map(ratio, 0.1f, 0.4f, -20, -10);
+            return true;
         } else if (ratio < 0.6)
         {
             // Perfect = Straight down the line
-            return map(ratio, 0.4f, 0.6f, -2.5f, 2.5f);
+            shotYaw = map(ratio, 0.4f, 0.6f, -2.5f, 2.5f);
+            return true;
         } else if (ratio < 0.8)
         {
             // Late = hit away from racket direction
-            return map(ratio, 0.6f, 0.8f, 10, 20);
+            shotYaw = map(ratio, 0.6f, 0.8f, 10, 20);
+            return true;
         }
+        shotYaw = 0;
         // Miss
-        return 180.0f;
+        return false;
     }
 
     private float getDistance(Vector3 shotDirection, Vector3 currPos, float strength, float frontX, float backX)
