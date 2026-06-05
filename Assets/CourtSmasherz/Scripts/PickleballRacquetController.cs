@@ -24,6 +24,7 @@ namespace CourtSmasherz
         private Quaternion racquetNeutralRotation;
         private bool hasPhoneNeutralRotation;
         private Quaternion initialLocalRotation;
+        private Vector3 initialVector3;
 
         public Transform HitTransform => transform;
 
@@ -34,12 +35,14 @@ namespace CourtSmasherz
         */
         public float phoneAccelerationMagnitude{ get; private set; }
         public Vector3 phoneAccelerationDirection{ get; private set;}
+        public Vector2 phoneAccelerationPitchYaw{ get; private set;}
 
         private const float irl_g = 9.81f; // in ms^-2
 
         private void Awake()
         {
             initialLocalRotation = transform.localRotation;
+            initialVector3 = initialLocalRotation * Vector3.forward;
         }
 
         public void ApplyPhoneMotion(
@@ -98,6 +101,7 @@ namespace CourtSmasherz
             // For ball controller script (PickleballBallController.cs) to use:
             phoneAccelerationMagnitude = phoneAccelerationMagnitudeCaculator(acceleration.z, rawPhoneRotation);
             phoneAccelerationDirection = transform.rotation * Vector3.forward;
+            phoneAccelerationPitchYaw = phonePitchYawCalculator(phoneAccelerationDirection);
         }
 
         public void ResetNeutralRotation()
@@ -123,5 +127,12 @@ namespace CourtSmasherz
             float gravityCompensatedAccelerationMagnitude = rawAccelerationMagnitude - gComponent;
             return gravityCompensatedAccelerationMagnitude;
         }
+
+        private Vector2 phonePitchYawCalculator(Vector3 currDirection)
+        {
+            Vector3 xzProjection = new Vector3(currDirection.x, 0, currDirection.z);
+            Vector2 pitchYaw = new Vector2 (Vector3.Angle(currDirection, xzProjection), Vector3.SignedAngle(xzProjection, initialVector3, Vector3.up)); 
+            return pitchYaw;
+        }        
     }
 }

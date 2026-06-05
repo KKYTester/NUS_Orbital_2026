@@ -56,7 +56,6 @@ namespace CourtSmasherz
                     trajectory.IsHit = false;
                 }
 
-                Debug.Log(P1Target);
                 transform.position = Vector3.MoveTowards(transform.position,
                     P1Target, autoMoveSpeed * Time.deltaTime);
             }

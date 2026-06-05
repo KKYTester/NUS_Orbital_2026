@@ -22,10 +22,13 @@ namespace CourtSmasherz
 
         private Vector3 ballVelocity;
 
-        public Vector3 Velocity => ballVelocity;
-
         public Action<int> OnPointScored;
         public Action<string> OnStatusChanged;
+
+        [Header("Ball Settings")]
+        public float ballGravity = 9.81f;
+        public float ballRadius{ get; private set; } = 0.03775f; // Note that this does not change the actual ball size
+        public Vector3 gravity => ballGravity * Vector3.down;
 
         [Header("Debug")]
         public Vector3 p1BallSpawnLocation = new Vector3(-5.4f, 3f, -0.378f);
@@ -43,52 +46,14 @@ namespace CourtSmasherz
             UpdateBall();
         }
 
+        private void FixedUpdate()
+        {
+            rb.AddForce(gravity, ForceMode.Acceleration);
+        }
+
         public bool ApplyShot(ShotEvent shot)
         {
-            // Transform racquet = shot.PlayerIndex == 0 ?     playerOneRacquet : playerTwoRacquet;
-
-            // if (racquet == null)
-            // {
-            //     return false;
-            // }
-
-            // bool nearPaddleX = Mathf.Abs(transform.position.x - racquet.position.x) <= hitWindowX;
-            // bool nearPaddleZ = Mathf.Abs(transform.position.z - racquet.position.z) <= hitWindowZ;
-
-            // if (!nearPaddleX || !nearPaddleZ)
-            // {
-            //     OnStatusChanged?.Invoke($"P{shot.PlayerIndex + 1} mistimed {shot.ShotType}");
-            //     return false;
-            // }
-
-            // float side = shot.PlayerIndex == 0 ? 1f : -1f;
-            // float clampedPower = Mathf.Clamp01(shot.Power);
-            // float speed = Mathf.Lerp(7f, 14f, clampedPower);
-            // float zCurve = Mathf.Clamp(shot.Direction + shot.Spin * 0.35f, -1f, 1f) * 4.2f;
-
-            // if (shot.ShotType == ShotType.Lob)
-            // {
-            //     zCurve *= 0.45f;
-            //     speed *= 0.78f;
-            // }
-            // else if (shot.ShotType == ShotType.Smash)
-            // {
-            //     speed *= 1.25f;
-            //     zCurve *= 0.65f;
-            // }
-
-            // transform.position = new Vector3(
-            //     racquet.position.x + side * 0.9f,
-            //     0.55f,
-            //     racquet.position.z
-            // );
-
-            // ballVelocity = new Vector3(side * speed, 0f, zCurve);
-
-            // OnStatusChanged?.Invoke(
-            //     $"P{shot.PlayerIndex + 1} {shot.ShotType} ({Mathf.RoundToInt(clampedPower * 100f)}%)"
-            // );
-
+            // Delete this function later
             return true;
         }
 

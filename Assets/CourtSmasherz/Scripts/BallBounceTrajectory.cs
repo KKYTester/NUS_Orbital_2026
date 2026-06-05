@@ -1,15 +1,17 @@
 using System.Collections.Generic;
+using CourtSmasherz;
 using UnityEngine;
 
 public class BallBounceTrajectory : MonoBehaviour
 {
+    [Header("References")]
+    public PickleballBallController ballController;
     public Rigidbody ballRb;
     public LineRenderer lineRenderer;
 
     public int steps = 1000;
     public float timeStep = 0.03f;
     public float effectiveBounceMultiplier = 0.5f;
-    public float ballRadius = 0.03775f;
     public float bounceTolerance = 0.05f; // in ms^-1
     public LayerMask collisionMask;
 
@@ -52,10 +54,10 @@ public class BallBounceTrajectory : MonoBehaviour
             float distance = direction.magnitude;
 
             if (distance > 0.0001f &&
-                Physics.SphereCast(position, ballRadius, direction.normalized, out RaycastHit hit, distance, collisionMask, QueryTriggerInteraction.Ignore))
+                Physics.SphereCast(position, ballController.ballRadius, direction.normalized, out RaycastHit hit, distance, collisionMask, QueryTriggerInteraction.Ignore))
             {
                 bounceCount++;
-                position = hit.point + hit.normal * ballRadius;
+                position = hit.point + hit.normal * ballController.ballRadius;
 
                 // Multiply vertical velocity by bounce multiplier
                 // (shortcut as compared to using normal because floor normal is always parallel to y axis)

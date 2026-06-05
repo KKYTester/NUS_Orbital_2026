@@ -4,6 +4,7 @@ public class TestHitEmulator : MonoBehaviour
 {
     public float magnitude = 10.0f;
     public Vector3 direction;
+    public ForceMode mode = ForceMode.Impulse;
 
     public float yMulti = 0.5f;
     public float zMulti = 0.5f; 
@@ -33,7 +34,7 @@ public class TestHitEmulator : MonoBehaviour
             // Currently x is the length of the court, so will reduce y and z components
             Vector3 modifiedForceDirection =new Vector3(forceDirection.x, forceDirection.y * yMulti, forceDirection.z * zMulti).normalized;
             Debug.Log($"{magnitude} || {forceDirection} || {modifiedForceDirection}");
-            rb.AddForce(magnitude * modifiedForceDirection, ForceMode.Impulse);
+            rb.AddForce(magnitude * modifiedForceDirection, mode);
         }
     }
 }
