@@ -31,12 +31,15 @@ public class RacketForceApplier : MonoBehaviour
     private Vector3 ballDestination;
 
     private float boxSizeX;
+    private Vector3 backDelimitStartPos;
 
     private void Start()
     {
         BoxCollider hitBox = GetComponent<BoxCollider>();
         hitBox.isTrigger = true;
         boxSizeX = hitBox.size.x;
+        backDelimiter.SetParent(null, true); // Keep back delimiter position the same, so only front should move with player
+        backDelimitStartPos = backDelimiter.position;
     }
 
     float overrideStrength = 0;
@@ -46,6 +49,20 @@ public class RacketForceApplier : MonoBehaviour
         if (destinationVisualiser == null)
         {
             return;
+        }
+
+        // Move back delimiter closer to the net as player moves closer to the net
+        if (Mathf.Abs(transform.position.x) > 6.10f)
+        {
+            backDelimiter.position = backDelimitStartPos;
+        } else
+        {
+            float backX = map(Mathf.Abs(transform.position.x), 2.57f, 6.10f, 1.0f, backDelimitStartPos.x);
+            if (backDelimitStartPos.x < 0)
+            {
+                backX *= -1.0f;
+            }
+            backDelimiter.position = new Vector3(backX, backDelimiter.position.y, backDelimiter.position.z);
         }
         
         Vector3 destination = new Vector3(ballDestination.x, 0, ballDestination.z);

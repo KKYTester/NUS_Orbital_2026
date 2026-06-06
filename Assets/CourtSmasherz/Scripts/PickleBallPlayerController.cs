@@ -16,6 +16,8 @@ namespace CourtSmasherz
         public float minBallHittableHeight  = 0.1f;
         public float minZ = -4.4f;
         public float maxZ = 4.4f;
+        public float minX = -6.6f;
+        public float maxX = 6.6f;
 
         [Header("References")]
         public Transform racketTransform;
@@ -57,6 +59,7 @@ namespace CourtSmasherz
                     );
 
                     targetPos.z = Mathf.Clamp(targetPos.z, minZ, maxZ);
+                    targetPos.x = Mathf.Clamp(targetPos.x, minX, maxX);
 
                     trajectory.IsHit = false;
                 }
