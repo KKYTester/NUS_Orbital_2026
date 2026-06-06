@@ -18,14 +18,14 @@ namespace CourtSmasherz
         public float maxZ = 4.4f;
 
         [Header("References")]
-        
         public Transform racketTransform;
         public Transform ball;
+        public Rigidbody ballRb;
         public PickleballBallController ballController;
         public BallBounceTrajectory trajectory;
         public CourtSmasherzGameManager gameManager;
 
-        private Vector3 P1Target;
+        private Vector3 targetPos;
 
         public void Start()
         {
@@ -34,7 +34,7 @@ namespace CourtSmasherz
                 Debug.Log("Missing attachment");
                 return;
             }
-            P1Target = transform.position;
+            targetPos = transform.position;
         }
         public void Update()
         {
@@ -43,26 +43,26 @@ namespace CourtSmasherz
                 return;
             }
 
-            if (playerIndex == 0)
+            if (playerIndex == 0 || playerIndex == 1)
             {
                 Vector3 P1TargetBuff;
                 if (trajectory.IsHit && FindMovementPoint(out P1TargetBuff, racketTransform.position))
                 {
                     Vector3 offset = racketTransform.position - transform.position;
 
-                    P1Target = new Vector3(
+                    targetPos = new Vector3(
                         P1TargetBuff.x - offset.x,
                         transform.position.y,
                         P1TargetBuff.z - offset.z
                     );
 
-                    P1Target.z = Mathf.Clamp(P1Target.z, minZ, maxZ);
+                    targetPos.z = Mathf.Clamp(targetPos.z, minZ, maxZ);
 
                     trajectory.IsHit = false;
                 }
 
                 transform.position = Vector3.MoveTowards(transform.position,
-                    P1Target, autoMoveSpeed * Time.deltaTime);
+                    targetPos, autoMoveSpeed * Time.deltaTime);
             }
 
             transform.rotation = Quaternion.Euler(0f, facingY, 0f);
@@ -75,6 +75,13 @@ namespace CourtSmasherz
             if (trajectory.BallPredictedPoints == null)
                 return false;
 
+            // Check that ball is moving towards the player before moving
+            if (playerIndex == 0 && ballRb.linearVelocity.x > 0f)
+                return false;
+
+            if (playerIndex == 1 && ballRb.linearVelocity.x < 0f)
+                return false;
+
             Vector2 currPosXZ = new Vector2(currPos.x, currPos.z);
 
             for (int i = 0; i < trajectory.BallPredictedPoints.Count; i++)
@@ -82,8 +89,13 @@ namespace CourtSmasherz
                 Vector3 predictedPoint = trajectory.BallPredictedPoints[i];
 
                 // Check side first
-                if (predictedPoint.x >= -2.57f)
+                if (playerIndex == 0 && predictedPoint.x >= -2.57f)
+                {
                     continue;
+                } else if (playerIndex == 1 && predictedPoint.x <= 2.57f)
+                {
+                    continue;
+                }
 
                 // Check height
                 if (!withinHittableHeight(predictedPoint.y))

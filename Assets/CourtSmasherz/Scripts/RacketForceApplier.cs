@@ -1,5 +1,6 @@
 using CourtSmasherz;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /*
     Apply this script on the GameObject with the hitbox that you want
@@ -38,6 +39,8 @@ public class RacketForceApplier : MonoBehaviour
         boxSizeX = hitBox.size.x;
     }
 
+    float overrideStrength = 0;
+
     void Update()
     {
         if (destinationVisualiser == null)
@@ -48,6 +51,15 @@ public class RacketForceApplier : MonoBehaviour
         Vector3 destination = new Vector3(ballDestination.x, 0, ballDestination.z);
 
         destinationVisualiser.position = Vector3.MoveTowards(destinationVisualiser.position, destination, autoMoveSpeed * Time.deltaTime);
+    
+        // For testing
+        // if (!isHitAlready && Keyboard.current.qKey.wasPressedThisFrame)
+        // {
+        //     overrideStrength = 10;
+        // } else if (!isHitAlready && Keyboard.current.wKey.wasPressedThisFrame)
+        // {
+        //     overrideStrength= -10;
+        // }
     }
 
     bool isHitAlready;
@@ -82,6 +94,13 @@ public class RacketForceApplier : MonoBehaviour
 
         float strength = racket.phoneAccelerationMagnitude;
 
+        // For testing
+        // if (Mathf.Abs(overrideStrength) > 0.001)
+        // {
+        //     strength = overrideStrength;
+        //     overrideStrength = 0;
+        // }
+
         if (Mathf.Abs(strength) < minPhoneAcceleration)
         {
             return;
@@ -95,7 +114,8 @@ public class RacketForceApplier : MonoBehaviour
         if (shotYawDecider(ratio, out shotYaw) == false)
         {
             return; // miss
-        }
+        }   
+
         if (strength < 0)
         {
             // Backhand, so reverse direction

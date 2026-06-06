@@ -47,7 +47,7 @@ public class BallBounceTrajectory : MonoBehaviour
             {
                 points.Add(position);
             }
-            Vector3 nextVelocity = velocity + Physics.gravity * timeStep;
+            Vector3 nextVelocity = velocity + ballController.gravity * timeStep;
             Vector3 nextPosition = position + nextVelocity * timeStep;
 
             Vector3 direction = nextPosition - position;
