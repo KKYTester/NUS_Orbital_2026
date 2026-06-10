@@ -23,6 +23,7 @@ namespace CourtSmasherz
         private Quaternion racquetNeutralRotation;
         private bool hasPhoneNeutralRotation;
         private Quaternion initialLocalRotation;
+        private bool calibratedWithScreenFacingForward;
 
         public Transform HitTransform => transform;
 
@@ -44,8 +45,66 @@ namespace CourtSmasherz
                 return;
             }
 
-            Quaternion rawPhoneRotation;
+            Quaternion rawPhoneRotation = CreateRawPhoneRotation(
+                orientation,
+                hasQuaternion,
+                phoneQuaternion,
+                calibratedWithScreenFacingForward
+            );
 
+            if (!hasPhoneNeutralRotation)
+            {
+                SetNeutralRotation(rawPhoneRotation, transform.localRotation);
+            }
+
+            Quaternion relativePhoneRotation =
+                Quaternion.Inverse(phoneNeutralRotation) * rawPhoneRotation;
+
+            Quaternion offsetRotation = Quaternion.Euler(phoneRotationOffsetEuler);
+
+            Quaternion targetRotation =
+                racquetNeutralRotation * offsetRotation * relativePhoneRotation;
+
+            transform.localRotation = Quaternion.Slerp(
+                transform.localRotation,
+                targetRotation,
+                phoneRotationSmoothing
+            );
+        }
+
+        public void SetNeutralFromPhoneMotion(
+            Vector3 acceleration,
+            Vector3 rotationRate,
+            Vector3 orientation,
+            bool hasQuaternion,
+            Quaternion phoneQuaternion,
+            bool screenFacingForward = false
+        )
+        {
+            calibratedWithScreenFacingForward = screenFacingForward;
+            Quaternion rawPhoneRotation = CreateRawPhoneRotation(
+                orientation,
+                hasQuaternion,
+                phoneQuaternion,
+                calibratedWithScreenFacingForward
+            );
+            SetNeutralRotation(rawPhoneRotation, initialLocalRotation);
+        }
+
+        public void ResetNeutralRotation()
+        {
+            hasPhoneNeutralRotation = false;
+            transform.localRotation = initialLocalRotation;
+        }
+
+        private Quaternion CreateRawPhoneRotation(
+            Vector3 orientation,
+            bool hasQuaternion,
+            Quaternion phoneQuaternion,
+            bool screenFacingForward
+        )
+        {
+            Quaternion rawPhoneRotation;
             if (hasQuaternion && useQuaternionOrientation)
             {
                 rawPhoneRotation = new Quaternion(
@@ -64,32 +123,20 @@ namespace CourtSmasherz
                 rawPhoneRotation = Quaternion.Euler(pitch, yaw, roll);
             }
 
-            if (!hasPhoneNeutralRotation)
+            if (screenFacingForward)
             {
-                phoneNeutralRotation = rawPhoneRotation;
-                racquetNeutralRotation = transform.localRotation;
-                hasPhoneNeutralRotation = true;
+                rawPhoneRotation *= Quaternion.Euler(0f, 180f, 0f);
             }
 
-            Quaternion relativePhoneRotation =
-                Quaternion.Inverse(phoneNeutralRotation) * rawPhoneRotation;
-
-            Quaternion offsetRotation = Quaternion.Euler(phoneRotationOffsetEuler);
-
-            Quaternion targetRotation =
-                racquetNeutralRotation * offsetRotation * relativePhoneRotation;
-
-            transform.localRotation = Quaternion.Slerp(
-                transform.localRotation,
-                targetRotation,
-                phoneRotationSmoothing
-            );
+            return rawPhoneRotation;
         }
 
-        public void ResetNeutralRotation()
+        private void SetNeutralRotation(Quaternion rawPhoneRotation, Quaternion neutralRacquetRotation)
         {
-            hasPhoneNeutralRotation = false;
-            transform.localRotation = initialLocalRotation;
+            phoneNeutralRotation = rawPhoneRotation;
+            racquetNeutralRotation = neutralRacquetRotation;
+            hasPhoneNeutralRotation = true;
+            transform.localRotation = neutralRacquetRotation;
         }
     }
 }

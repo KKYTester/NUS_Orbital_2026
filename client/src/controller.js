@@ -8,6 +8,8 @@ const p2Button = document.querySelector("#p2Button");
 const joinButton = document.querySelector("#joinButton");
 const permissionButton = document.querySelector("#permissionButton");
 const calibrateButton = document.querySelector("#calibrateButton");
+const screenBackButton = document.querySelector("#screenBackButton");
+const screenFrontButton = document.querySelector("#screenFrontButton");
 const connectionStatus = document.querySelector("#connectionStatus");
 const motionStatus = document.querySelector("#motionStatus");
 const sensorDebug = document.querySelector("#sensorDebug");
@@ -26,12 +28,15 @@ let hasValidMotionSample = false;
 let motionEventCount = 0;
 let orientationEventCount = 0;
 let noMotionTimer = null;
+let calibrationScreenSide = "back";
 
 p1Button.addEventListener("click", () => selectPlayer("p1"));
 p2Button.addEventListener("click", () => selectPlayer("p2"));
 joinButton.addEventListener("click", joinRoom);
 permissionButton.addEventListener("click", enableMotion);
 calibrateButton.addEventListener("click", calibrate);
+screenBackButton.addEventListener("click", () => selectCalibrationScreenSide("back"));
+screenFrontButton.addEventListener("click", () => selectCalibrationScreenSide("front"));
 manualShotButtons.forEach((button) => {
   button.addEventListener("click", () => sendManualShot(button.dataset.shot));
 });
@@ -51,6 +56,12 @@ function selectPlayer(nextPlayer) {
   playerId = nextPlayer;
   p1Button.classList.toggle("selected", playerId === "p1");
   p2Button.classList.toggle("selected", playerId === "p2");
+}
+
+function selectCalibrationScreenSide(nextSide) {
+  calibrationScreenSide = nextSide;
+  screenBackButton.classList.toggle("selected", calibrationScreenSide === "back");
+  screenFrontButton.classList.toggle("selected", calibrationScreenSide === "front");
 }
 
 function joinRoom() {
@@ -222,8 +233,16 @@ function calibrate() {
     return;
   }
   calibration = createCalibration(smoothedSample);
-  client.send("calibrate", { roomCode, playerId, ...calibration });
-  motionStatus.textContent = "Neutral paddle calibrated";
+  client.send("calibrate", {
+    roomCode,
+    playerId,
+    timestamp: Date.now(),
+    screenFacing: calibrationScreenSide,
+    screenFacingForward: calibrationScreenSide === "front",
+    ...calibration,
+    sample: smoothedSample
+  });
+  motionStatus.textContent = `Neutral paddle calibrated (${calibrationScreenSide === "front" ? "screen front" : "screen back"})`;
 }
 
 function sendManualShot(shotType) {

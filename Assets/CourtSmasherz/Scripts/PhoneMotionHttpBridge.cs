@@ -375,6 +375,14 @@ namespace CourtSmasherz
                 }
 
                 int playerIndex = unityEvent.playerId == "p2" ? 1 : 0;
+
+                if (unityEvent.eventType == "calibrate")
+                {
+                    ApplyCalibrateEvent(playerIndex, unityEvent);
+                    SetPlayerMotionStatus(playerIndex, "Neutral paddle calibrated", true);
+                    continue;
+                }
+
                 if (readinessCheckActive && string.Equals(unityEvent.source, "motion", StringComparison.OrdinalIgnoreCase))
                 {
                     MarkPlayerReady(playerIndex);
@@ -477,6 +485,41 @@ namespace CourtSmasherz
                 gameManager.ApplyShot(new ShotEvent(playerIndex, shotType, Mathf.Max(0.25f, power), direction, spin));
                 SetPlayerMotionStatus(playerIndex, $"Motion swing detected: {shotType}", true);
             }
+        }
+
+        private void ApplyCalibrateEvent(int playerIndex, UnityShotEvent unityEvent)
+        {
+            PickleballRacquetController racquetController =
+                playerIndex == 0 ? playerOneRacquetController : playerTwoRacquetController;
+
+            if (racquetController == null)
+            {
+                return;
+            }
+
+            Vector3 acceleration = new Vector3(unityEvent.accelX, unityEvent.accelY, unityEvent.accelZ);
+            Vector3 rotationRate = new Vector3(unityEvent.rotationAlpha, unityEvent.rotationBeta, unityEvent.rotationGamma);
+            Vector3 orientation = new Vector3(unityEvent.orientationBeta, unityEvent.orientationAlpha, unityEvent.orientationGamma);
+
+            Quaternion phoneQuaternion = Quaternion.identity;
+            if (unityEvent.hasQuaternion)
+            {
+                phoneQuaternion = new Quaternion(
+                    unityEvent.quaternionX,
+                    unityEvent.quaternionY,
+                    unityEvent.quaternionZ,
+                    unityEvent.quaternionW
+                );
+            }
+
+            racquetController.SetNeutralFromPhoneMotion(
+                acceleration,
+                rotationRate,
+                orientation,
+                unityEvent.hasQuaternion,
+                phoneQuaternion,
+                unityEvent.screenFacingForward
+            );
         }
 
         public void ResetRacquetNeutralRotations()
@@ -647,6 +690,7 @@ namespace CourtSmasherz
             public string playerId;
             public string shotType;
             public string source;
+            public bool screenFacingForward;
             public float power;
             public float direction;
             public float spin;
