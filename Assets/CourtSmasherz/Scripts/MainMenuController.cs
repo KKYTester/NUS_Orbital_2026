@@ -59,7 +59,7 @@ namespace CourtSmasherz
 
             if (readyStatusText != null)
             {
-                readyStatusText.text = "Join both phones, then press Start.";
+                readyStatusText.text = "scan the qr code to join the room.\nPress Start once you are ready!";
             }
         }
 
@@ -75,7 +75,7 @@ namespace CourtSmasherz
             {
                 string p1Status = p1Ready ? "ready" : "waiting";
                 string p2Status = p2Ready ? "ready" : "waiting";
-                readyStatusText.text = $"P1 {p1Status}  |  P2 {p2Status}";
+                readyStatusText.text = $"P1 {p1Status}  |  P2 {p2Status}\nWaiting for P1 and P2 to swing once.";
             }
         }
 

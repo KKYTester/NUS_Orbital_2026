@@ -126,7 +126,7 @@ namespace CourtSmasherz
             {
                 ballController.ResetBall(1, false);
             }
-            SetStatus("Scan the QR code, join both phones, then press Start.");
+            SetStatus("");
             UpdateHud();
         }
 
@@ -138,7 +138,7 @@ namespace CourtSmasherz
             {
                 ballController.ResetBall(1, false);
             }
-            SetStatus("Waiting for P1 and P2 to swing once.");
+            SetStatus("");
             UpdateHud();
         }
 
