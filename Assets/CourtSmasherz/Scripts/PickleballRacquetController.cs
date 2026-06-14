@@ -84,6 +84,11 @@ namespace CourtSmasherz
                 targetRotation,
                 phoneRotationSmoothing
             );
+
+            // For ball controller script (PickleballBallController.cs) to use:
+            phoneAccelerationMagnitude = phoneAccelerationMagnitudeCaculator(acceleration.z, rawPhoneRotation);
+            phoneAccelerationDirection = transform.rotation * Vector3.forward;
+            phoneAccelerationPitchYaw = phonePitchYawCalculator(phoneAccelerationDirection);
         }
 
         public void SetNeutralFromPhoneMotion(
@@ -142,23 +147,6 @@ namespace CourtSmasherz
                 rawPhoneRotation *= Quaternion.Euler(0f, 180f, 0f);
             }
 
-            Quaternion relativePhoneRotation =
-                Quaternion.Inverse(phoneNeutralRotation) * rawPhoneRotation;
-
-            Quaternion offsetRotation = Quaternion.Euler(phoneRotationOffsetEuler);
-
-            Quaternion targetRotation =
-                racquetNeutralRotation * offsetRotation * relativePhoneRotation;
-
-            transform.localRotation = Quaternion.Slerp(
-                transform.localRotation,
-                targetRotation,
-                phoneRotationSmoothing
-            );
-            // For ball controller script (PickleballBallController.cs) to use:
-            phoneAccelerationMagnitude = phoneAccelerationMagnitudeCaculator(acceleration.z, rawPhoneRotation);
-            phoneAccelerationDirection = transform.rotation * Vector3.forward;
-            phoneAccelerationPitchYaw = phonePitchYawCalculator(phoneAccelerationDirection);
             return rawPhoneRotation;
         }
 
