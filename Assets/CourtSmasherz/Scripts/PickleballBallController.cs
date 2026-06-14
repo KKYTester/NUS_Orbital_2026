@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace CourtSmasherz
 {
@@ -8,6 +9,7 @@ namespace CourtSmasherz
         [Header("References")]
         public Transform playerOneRacquet;
         public Transform playerTwoRacquet;
+        public CourtSmasherzGameManager gameManger;
 
         [Header("Court Bounds")]
         public float leftOutX = -9.25f;
@@ -16,67 +18,42 @@ namespace CourtSmasherz
         public float maxZ = 4.4f;
 
         [Header("Hit Detection")]
-        public float hitWindowX = 1.55f;
-        public float hitWindowZ = 1.45f;
+        public float hitStrengthMultiplier = 1.0f;
 
         private Vector3 ballVelocity;
 
-        public Vector3 Velocity => ballVelocity;
-
         public Action<int> OnPointScored;
         public Action<string> OnStatusChanged;
+
+        [Header("Ball Settings")]
+        public float ballGravity = 9.81f;
+        public float ballRadius{ get; private set; } = 0.03775f; // Note that this does not change the actual ball size
+        public Vector3 gravity => ballGravity * Vector3.down;
+
+        [Header("Debug")]
+        public Vector3 p1BallSpawnLocation => new Vector3 (playerOneRacquet.position.x, playerOneRacquet.position.y + 1, playerOneRacquet.position.z);
+        public Vector3 p2BallSpawnLocation => new Vector3(playerTwoRacquet.position.x, playerTwoRacquet.position.y + 1, playerTwoRacquet.position.z);
+
+        private Rigidbody rb;
+
+        private void Start()
+        {
+            rb = GetComponent<Rigidbody>();
+        }
 
         private void Update()
         {
             UpdateBall();
         }
 
+        private void FixedUpdate()
+        {
+            rb.AddForce(gravity, ForceMode.Acceleration);
+        }
+
         public bool ApplyShot(ShotEvent shot)
         {
-            Transform racquet = shot.PlayerIndex == 0 ?     playerOneRacquet : playerTwoRacquet;
-
-            if (racquet == null)
-            {
-                return false;
-            }
-
-            bool nearPaddleX = Mathf.Abs(transform.position.x - racquet.position.x) <= hitWindowX;
-            bool nearPaddleZ = Mathf.Abs(transform.position.z - racquet.position.z) <= hitWindowZ;
-
-            if (!nearPaddleX || !nearPaddleZ)
-            {
-                OnStatusChanged?.Invoke($"P{shot.PlayerIndex + 1} mistimed {shot.ShotType}");
-                return false;
-            }
-
-            float side = shot.PlayerIndex == 0 ? 1f : -1f;
-            float clampedPower = Mathf.Clamp01(shot.Power);
-            float speed = Mathf.Lerp(7f, 14f, clampedPower);
-            float zCurve = Mathf.Clamp(shot.Direction + shot.Spin * 0.35f, -1f, 1f) * 4.2f;
-
-            if (shot.ShotType == ShotType.Lob)
-            {
-                zCurve *= 0.45f;
-                speed *= 0.78f;
-            }
-            else if (shot.ShotType == ShotType.Smash)
-            {
-                speed *= 1.25f;
-                zCurve *= 0.65f;
-            }
-
-            transform.position = new Vector3(
-                racquet.position.x + side * 0.9f,
-                0.55f,
-                racquet.position.z
-            );
-
-            ballVelocity = new Vector3(side * speed, 0f, zCurve);
-
-            OnStatusChanged?.Invoke(
-                $"P{shot.PlayerIndex + 1} {shot.ShotType} ({Mathf.RoundToInt(clampedPower * 100f)}%)"
-            );
-
+            // Delete this function later
             return true;
         }
 
@@ -91,28 +68,19 @@ namespace CourtSmasherz
 
         private void UpdateBall()
         {
-            transform.position += ballVelocity * Time.deltaTime;
-            transform.Rotate(Vector3.forward, ballVelocity.magnitude * 80f * Time.deltaTime, Space.World);
-
-            if (transform.position.z < minZ || transform.position.z > maxZ)
+            // if (gameManger.CurrentPhase != CourtSmasherzGameManager.GamePhase.Playing)
+            // {
+            //     return;
+            // }
+            if (Keyboard.current.digit1Key.wasPressedThisFrame)
             {
-                transform.position = new Vector3(
-                    transform.position.x,
-                    transform.position.y,
-                    Mathf.Clamp(transform.position.z, minZ, maxZ)
-                );
-
-                ballVelocity.z *= -0.9f;
-                OnStatusChanged?.Invoke("Ball bounced off sideline");
+                transform.position = p1BallSpawnLocation;
+                rb.linearVelocity = Vector3.zero;
             }
-
-            if (transform.position.x < leftOutX)
+            if (Keyboard.current.digit2Key.wasPressedThisFrame)
             {
-                OnPointScored?.Invoke(1);
-            }
-            else if (transform.position.x > rightOutX)
-            {
-                OnPointScored?.Invoke(0);
+                transform.position = p2BallSpawnLocation;
+                rb.linearVelocity = Vector3.zero;
             }
         }
     }

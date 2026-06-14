@@ -7,6 +7,9 @@ TagManager:
   - Crate
   - Dirt
   - CinemachineTarget
+  - P1_Racket
+  - P2_Racket
+  - Ball
   layers:
   - Default
   - TransparentFX
@@ -14,8 +17,8 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
+  - Court
+  - OutOfBounds
   - 
   - 
   - 
@@ -53,3 +56,4 @@ TagManager:
   - Light Layer 5
   - Light Layer 6
   - Light Layer 7
+  m_MigratedRenderPipelines: []

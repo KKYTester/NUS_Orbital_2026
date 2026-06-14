@@ -17,22 +17,13 @@ namespace CourtSmasherz
 
         [Header("Scene References")]
         public Transform ball;
-        public Transform playerOneRoot;
-        public Transform playerTwoRoot;
         public Text scoreText;
         public Text statusText;
         public PhoneMotionHttpBridge bridge;
         public PickleballBallController ballController;
 
-        [Header("Court")]
-        public float minZ = -4.4f;
-        public float maxZ = 4.4f;
-        public float playerOneX = -7.3f;
-        public float playerTwoX = 7.3f;
-
         [Header("Gameplay")]
         public int matchPoint = 7;
-        public float autoMoveSpeed = 8f;
         public bool enableKeyboardTestShots = false;
 
         private int playerOneScore;
@@ -78,7 +69,6 @@ namespace CourtSmasherz
                 return;
             }
 
-            UpdateAutomaticPlayerMovement();
             if (enableKeyboardTestShots)
             {
                 UpdateKeyboardTestShots();
@@ -171,31 +161,6 @@ namespace CourtSmasherz
         public void SetInputLocked(bool locked)
         {
             inputLocked = locked;
-        }
-
-        private void UpdateAutomaticPlayerMovement()
-        {
-            MovePlayerTowardBall(playerOneRoot, 0);
-            MovePlayerTowardBall(playerTwoRoot, 1);
-        }
-
-        private void MovePlayerTowardBall(Transform playerRoot, int playerIndex)
-        {
-            if (playerRoot == null || ball == null)
-            {
-                return;
-            }
-
-            Vector3 currentBallVelocity = ballController != null ? ballController.Velocity : Vector3.zero;
-bool        ballComingTowardPlayer = playerIndex == 0 ? currentBallVelocity.x < 0f : currentBallVelocity.x > 0f;
-            bool ballOnPlayerHalf = playerIndex == 0 ? ball.position.x < 0f : ball.position.x > 0f;
-            float targetZ = ballComingTowardPlayer || ballOnPlayerHalf
-                ? Mathf.Clamp(ball.position.z, minZ, maxZ)
-                : Mathf.Clamp(ball.position.z * 0.25f, minZ, maxZ);
-
-            Vector3 target = new Vector3(playerIndex == 0 ? playerOneX : playerTwoX, playerRoot.position.y, targetZ);
-            playerRoot.position = Vector3.Lerp(playerRoot.position, target, Time.deltaTime * autoMoveSpeed);
-            playerRoot.rotation = Quaternion.Euler(0f, playerIndex == 0 ? 90f : -90f, 0f);
         }
 
         private void AwardPoint(int playerIndex)

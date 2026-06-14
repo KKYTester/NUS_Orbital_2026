@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace CourtSmasherz
@@ -23,13 +24,26 @@ namespace CourtSmasherz
         private Quaternion racquetNeutralRotation;
         private bool hasPhoneNeutralRotation;
         private Quaternion initialLocalRotation;
+        private Vector3 initialVector3;
         private bool calibratedWithScreenFacingForward;
 
         public Transform HitTransform => transform;
 
+        /*
+            Following is for the racket force appliers to use
+            get; -> Others scripts can "get"/read the variable
+            private set; -> Only this script can set the variable
+        */
+        public float phoneAccelerationMagnitude{ get; private set; }
+        public Vector3 phoneAccelerationDirection{ get; private set;}
+        public Vector2 phoneAccelerationPitchYaw{ get; private set;}
+
+        private const float irl_g = 9.81f; // in ms^-2
+
         private void Awake()
         {
             initialLocalRotation = transform.localRotation;
+            initialVector3 = initialLocalRotation * Vector3.forward;
         }
 
         public void ApplyPhoneMotion(
@@ -70,6 +84,11 @@ namespace CourtSmasherz
                 targetRotation,
                 phoneRotationSmoothing
             );
+
+            // For ball controller script (PickleballBallController.cs) to use:
+            phoneAccelerationMagnitude = phoneAccelerationMagnitudeCaculator(acceleration.z, rawPhoneRotation);
+            phoneAccelerationDirection = transform.rotation * Vector3.forward;
+            phoneAccelerationPitchYaw = phonePitchYawCalculator(phoneAccelerationDirection);
         }
 
         public void SetNeutralFromPhoneMotion(
@@ -138,5 +157,30 @@ namespace CourtSmasherz
             hasPhoneNeutralRotation = true;
             transform.localRotation = neutralRacquetRotation;
         }
+
+        // Calculation of phone acceleration with gravity compensation
+        private float phoneAccelerationMagnitudeCaculator(float rawAccelerationMagnitude, Quaternion rawPhoneRotation)
+        {
+            // Vector of phone orientation with respect to real world frame
+            // irl east = +ve x-axis; irl north = +ve y-axis; irl down = +ve z-axis
+            // Back of phone is where this vector is pointing
+            Vector3 phoneVector = rawPhoneRotation * Vector3.forward;
+
+            // Following's theta is the angle between phoneVector and z-axis
+            float cos_theta = Vector3.Dot(phoneVector, Vector3.forward)
+            / phoneVector.magnitude; /*magnitude of Vector3.foward omitted because its just 1*/
+            // Magnitude of the component of accelerationVector that is affected by gravity
+            float gComponent = irl_g * cos_theta;
+
+            float gravityCompensatedAccelerationMagnitude = rawAccelerationMagnitude - gComponent;
+            return gravityCompensatedAccelerationMagnitude;
+        }
+
+        private Vector2 phonePitchYawCalculator(Vector3 currDirection)
+        {
+            Vector3 xzProjection = new Vector3(currDirection.x, 0, currDirection.z);
+            Vector2 pitchYaw = new Vector2 (Vector3.Angle(currDirection, xzProjection), Vector3.SignedAngle(xzProjection, initialVector3, Vector3.up)); 
+            return pitchYaw;
+        }        
     }
 }
