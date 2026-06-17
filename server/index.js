@@ -10,6 +10,7 @@ import { createRoomCode, handleDisconnect, joinRoom, rooms } from "./rooms.js";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const publicDir = join(root, "client");
 const sharedDir = join(root, "shared");
+const isHosted = Boolean(process.env.RENDER || process.env.PUBLIC_BASE_URL);
 const port = Number(process.env.PORT || 3000);
 const unityEvents = new Map();
 let nextUnityEventId = 1;
@@ -22,6 +23,18 @@ const mime = {
   ".svg": "image/svg+xml"
 };
 
+function getPublicBaseUrl(req) {
+  if (process.env.PUBLIC_BASE_URL) {
+    return process.env.PUBLIC_BASE_URL.replace(/\/+$/, "");
+  }
+
+  if (isHosted) {
+    return `https://${req.headers.host}`;
+  }
+
+  const host = getAdvertisedHost();
+  return `http://${host}:${port}`;
+}
 function getAdvertisedHost() {
   if (process.env.PHONE_HOST) {
     return process.env.PHONE_HOST;
@@ -62,8 +75,18 @@ function getAdvertisedHost() {
 }
 
 const server = createServer(async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
   if (!req.url) return send(res, 400, "Bad request");
-  const url = new URL(req.url, `http://${req.headers.host}`);
+  const url = new URL(req.url, `${isHosted ? "https" : "http"}://${req.headers.host}`);
 
   if (url.pathname === "/health") {
     return sendJson(res, 200, { ok: true });
@@ -73,9 +96,8 @@ const server = createServer(async (req, res) => {
     const roomCode = createRoomCode(rooms);
     ensureUnityEventQueue(roomCode);
 
-    const host = getAdvertisedHost();
-    const phoneJoinUrl = `http://${host}:${port}/controller.html?room=${roomCode}`;
-    const phoneBaseUrl = `http://${host}:${port}`;
+    const phoneBaseUrl = getPublicBaseUrl(req);
+    const phoneJoinUrl = `${phoneBaseUrl}/controller.html?room=${roomCode}`;
 
     return sendJson(res, 200, {
       roomCode,
@@ -409,3 +431,4 @@ server.listen(port, "0.0.0.0", () => {
   console.log(`Court Smasherz running at http://localhost:${port}`);
   console.log("Open /game on the laptop and /controller on each phone.");
 });
+
