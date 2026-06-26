@@ -25,9 +25,9 @@ namespace CourtSmasherz
         public PickleballRacquetController playerTwoRacquetController;
 
         [Header("Server")]
-        public string serverBaseUrl = "http://localhost:3000";
+        public string serverBaseUrl = "https://nus-orbital-2026.onrender.com";
         public float pollIntervalSeconds = 0.08f;
-        public bool autoStartLocalServer = true;
+        public bool autoStartLocalServer = false;
         public string nodeExecutable = "node";
         public string fallbackNodeExecutable = @"C:\Users\kumar\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe";
 
@@ -135,7 +135,9 @@ namespace CourtSmasherz
         private IEnumerator EnsureServerThenCreateRoom()
         {
             // Temporarily keep this BaseUrl as backup before /unity/create-room replies
-            phoneBaseUrl = $"http://{GetLocalIPv4Address()}:3000";
+            phoneBaseUrl = autoStartLocalServer
+                ? $"http://{GetLocalIPv4Address()}:3000"
+                : serverBaseUrl.TrimEnd('/');
             if (roomCodeText != null)
             {
                 roomCodeText.text = $"Phone URL: {phoneBaseUrl}/controller.html";

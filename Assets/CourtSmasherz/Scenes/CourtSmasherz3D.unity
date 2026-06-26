@@ -5323,9 +5323,9 @@ MonoBehaviour:
   playerTwoMotionStatusText: {fileID: 1510618800}
   playerOneRacquetController: {fileID: 260991437}
   playerTwoRacquetController: {fileID: 1995823892}
-  serverBaseUrl: http://localhost:3000
+  serverBaseUrl: https://nus-orbital-2026.onrender.com
   pollIntervalSeconds: 0.08
-  autoStartLocalServer: 1
+  autoStartLocalServer: 0
   nodeExecutable: node
   fallbackNodeExecutable: C:\Users\kumar\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe
   accelerationShotThreshold: 13
