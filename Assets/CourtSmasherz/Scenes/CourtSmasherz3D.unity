@@ -259,7 +259,7 @@ GameObject:
   - component: {fileID: 60918781}
   m_Layer: 0
   m_Name: Center Net
-  m_TagString: Untagged
+  m_TagString: outOfBounds
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -714,7 +714,7 @@ GameObject:
   - component: {fileID: 226935098}
   m_Layer: 7
   m_Name: Cube (2)
-  m_TagString: Untagged
+  m_TagString: outOfBounds
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -866,8 +866,8 @@ MonoBehaviour:
   predictedPointTolerance: 1
   maxBallHittableHeight: 2
   minBallHittableHeight: 0
-  minZ: -3.6
-  maxZ: 3.6
+  minZ: -3
+  maxZ: 3
   minX: -7.205
   maxX: 7.205
   racketTransform: {fileID: 1116227554}
@@ -1280,7 +1280,7 @@ Transform:
   m_GameObject: {fileID: 387491858}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.85, z: 7.83}
+  m_LocalPosition: {x: -0, y: -0.85, z: 8.45}
   m_LocalScale: {x: 3, y: 0.1, z: 0.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1697,12 +1697,10 @@ MonoBehaviour:
   playerOneRacquet: {fileID: 1528332437}
   playerTwoRacquet: {fileID: 1116227554}
   gameManger: {fileID: 1583913856}
-  leftOutX: -9.25
-  rightOutX: 9.25
-  minZ: -4.4
-  maxZ: 4.4
-  hitStrengthMultiplier: 1
+  netX: 0
+  outOfBoundsTag: outOfBounds
   ballGravity: 7
+  bounceDebounceTime: 0.08
 --- !u!54 &405539399
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2504,7 +2502,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &559302437
 Transform:
   m_ObjectHideFlags: 0
@@ -2514,7 +2512,7 @@ Transform:
   m_GameObject: {fileID: 559302436}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.85, z: 7.83}
+  m_LocalPosition: {x: 0, y: -0.85, z: 8.45}
   m_LocalScale: {x: 3, y: 0.1, z: 0.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2782,7 +2780,7 @@ GameObject:
   - component: {fileID: 655086899}
   m_Layer: 7
   m_Name: Cube (3)
-  m_TagString: Untagged
+  m_TagString: outOfBounds
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3254,7 +3252,7 @@ GameObject:
   - component: {fileID: 914935640}
   m_Layer: 7
   m_Name: Cube
-  m_TagString: Untagged
+  m_TagString: outOfBounds
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4064,6 +4062,7 @@ MonoBehaviour:
   destinationVisualiser: {fileID: 1613787667}
   frontDelimiter: {fileID: 1219849525}
   backDelimiter: {fileID: 559302437}
+  playerIndex: 1
   autoMoveSpeed: 10
 --- !u!65 &1116227557
 BoxCollider:
@@ -4709,7 +4708,7 @@ GameObject:
   - component: {fileID: 1440178383}
   m_Layer: 7
   m_Name: Cube (1)
-  m_TagString: Untagged
+  m_TagString: outOfBounds
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5069,6 +5068,7 @@ MonoBehaviour:
   destinationVisualiser: {fileID: 1757490130}
   frontDelimiter: {fileID: 2145244417}
   backDelimiter: {fileID: 387491859}
+  playerIndex: 0
   autoMoveSpeed: 10
 --- !u!1 &1542839510
 GameObject:
@@ -6186,8 +6186,8 @@ MonoBehaviour:
   predictedPointTolerance: 1
   maxBallHittableHeight: 2
   minBallHittableHeight: 0
-  minZ: -3.6
-  maxZ: 3.6
+  minZ: -3
+  maxZ: 3
   minX: -7.205
   maxX: 7.205
   racketTransform: {fileID: 1528332437}

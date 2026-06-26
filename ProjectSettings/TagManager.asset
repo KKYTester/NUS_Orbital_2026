@@ -10,6 +10,7 @@ TagManager:
   - P1_Racket
   - P2_Racket
   - Ball
+  - outOfBounds
   layers:
   - Default
   - TransparentFX

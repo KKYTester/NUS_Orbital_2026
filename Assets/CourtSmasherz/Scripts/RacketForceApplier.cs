@@ -25,6 +25,9 @@ public class RacketForceApplier : MonoBehaviour
     public Transform frontDelimiter;
     public Transform backDelimiter;
 
+    [Header("Gameplay")]
+    public int playerIndex = 0; // 0 = P1, 1 = P2
+
     [Header("Visualiser Setting")]
     public float autoMoveSpeed = 1.0f;
 
@@ -57,7 +60,7 @@ public class RacketForceApplier : MonoBehaviour
             backDelimiter.position = backDelimitStartPos;
         } else
         {
-            float backX = map(Mathf.Abs(transform.position.x), 3.5f, 6.10f, 1.0f, backDelimitStartPos.x);
+            float backX = map(Mathf.Abs(transform.position.x), 4.5f, 6.10f, 2.0f, Mathf.Abs(backDelimitStartPos.x));
             if (backDelimitStartPos.x < 0)
             {
                 backX *= -1.0f;
@@ -153,8 +156,11 @@ public class RacketForceApplier : MonoBehaviour
         Vector3 velo = CalculateVelocityToTarget(other.transform.position, ballDestination, 1.2f, ball.gravity);
         Rigidbody ballRb = other.GetComponent<Rigidbody>();
         ballRb.linearVelocity = velo;
+
+        ball.RegisterHit(playerIndex);
+
         destinationVisualiser.position = new Vector3(other.transform.position.x, 0, other.transform.position.z);
-        isHitAlready = true; // Prevent double hits while ball hasnt exited colllider
+        isHitAlready = true; // Prevent double hits while ball hasnt exited collider
     }
 
     private float map(float input, float inputMin, float inputMax, float outputMin, float outputMax)
