@@ -57,7 +57,7 @@ public class RacketForceApplier : MonoBehaviour
             backDelimiter.position = backDelimitStartPos;
         } else
         {
-            float backX = map(Mathf.Abs(transform.position.x), 2.57f, 6.10f, 1.0f, backDelimitStartPos.x);
+            float backX = map(Mathf.Abs(transform.position.x), 3.5f, 6.10f, 1.0f, backDelimitStartPos.x);
             if (backDelimitStartPos.x < 0)
             {
                 backX *= -1.0f;
@@ -170,12 +170,12 @@ public class RacketForceApplier : MonoBehaviour
         if (ratio < 0.1)
         {
             // Early = Crosscourt hit
-            shotYaw = map(ratio, 0.0f, 0.1f, -30, -25);
+            shotYaw = map(ratio, 0.0f, 0.1f, -20, -15);
             return true;
         } else if (ratio < 0.4)
         {
             // Slightly early = Normal(?) hit
-            shotYaw = map(ratio, 0.1f, 0.4f, -20, -10);
+            shotYaw = map(ratio, 0.1f, 0.4f, -15, -5);
             return true;
         } else if (ratio < 0.6)
         {

@@ -27,7 +27,7 @@ namespace CourtSmasherz
 
         [Header("Ball Settings")]
         public float ballGravity = 9.81f;
-        public float ballRadius{ get; private set; } = 0.03775f; // Note that this does not change the actual ball size
+        public float ballRadius{ get; private set; } = 0.1f; // Note that this does not change the actual ball size
         public Vector3 gravity => ballGravity * Vector3.down;
 
         [Header("Debug")]
