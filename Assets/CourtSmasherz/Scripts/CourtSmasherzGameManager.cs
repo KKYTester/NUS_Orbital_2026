@@ -21,6 +21,8 @@ namespace CourtSmasherz
         public Text statusText;
         public PhoneMotionHttpBridge bridge;
         public PickleballBallController ballController;
+        public PickleballPlayerController playerOneController;
+        public PickleballPlayerController playerTwoController;
 
         [Header("Gameplay")]
         public int matchPoint = 7;
@@ -29,6 +31,7 @@ namespace CourtSmasherz
         private int playerOneScore;
         private int playerTwoScore;
         private bool inputLocked = true;
+        private int servingPlayerIndex = 0;
 
         public GamePhase CurrentPhase { get; private set; } = GamePhase.Menu;
         public bool IsPlaying => CurrentPhase == GamePhase.Playing;
@@ -38,6 +41,7 @@ namespace CourtSmasherz
             if (ballController != null)
             {
                 ballController.OnPointScored += AwardPoint;
+                ballController.OnSideOut += SideOutToPlayer;
                 ballController.OnStatusChanged += SetStatus;
             }
 
@@ -81,12 +85,14 @@ namespace CourtSmasherz
             if (ballController != null)
             {
                 ballController.OnPointScored -= AwardPoint;
+                ballController.OnSideOut -= SideOutToPlayer;
                 ballController.OnStatusChanged -= SetStatus;
             }
         }
 
         public void ApplyShot(ShotEvent shot)
         {
+            // Currently out of use function
             if (inputLocked || CurrentPhase != GamePhase.Playing)
             {
                 return;
@@ -96,23 +102,27 @@ namespace CourtSmasherz
             {
                 return;
             }
-
-            ballController.ApplyShot(shot);
         }
 
         public void ResetMatch()
         {
             playerOneScore = 0;
             playerTwoScore = 0;
+            servingPlayerIndex = 0;
+
             CurrentPhase = GamePhase.Playing;
             SetInputLocked(false);
+
             if (ballController != null)
             {
-                ballController.ResetBall(1, true);
+                RespawnPlayersForServe();
+                ballController.SpawnForServe(servingPlayerIndex);
             }
+
             SetStatus(enableKeyboardTestShots
-                ? "Match started. Keyboard test shots are enabled."
-                : "Match started. Join the Unity room from your phone controller.");
+                ? "Match started.\nP1 serving.\nKeyboard test shots are enabled."
+                : "Match started.\nP1 serving.");
+
             UpdateHud();
         }
 
@@ -124,7 +134,8 @@ namespace CourtSmasherz
             SetInputLocked(true);
             if (ballController != null)
             {
-                ballController.ResetBall(1, false);
+                RespawnPlayersForServe();
+                ballController.SpawnForServe(0);
             }
             SetStatus("");
             UpdateHud();
@@ -136,7 +147,8 @@ namespace CourtSmasherz
             SetInputLocked(true);
             if (ballController != null)
             {
-                ballController.ResetBall(1, false);
+                RespawnPlayersForServe();
+                ballController.SpawnForServe(0);
             }
             SetStatus("");
             UpdateHud();
@@ -148,13 +160,21 @@ namespace CourtSmasherz
             {
                 bridge.ResetRacquetNeutralRotations();
             }
+
+            playerOneScore = 0;
+            playerTwoScore = 0;
+            servingPlayerIndex = 0;
+
             CurrentPhase = GamePhase.Playing;
             SetInputLocked(false);
+
             if (ballController != null)
             {
-                ballController.ResetBall(1, true);
+                RespawnPlayersForServe();
+                ballController.SpawnForServe(servingPlayerIndex);
             }
-            SetStatus("Both phones ready. Match started.");
+
+            SetStatus("Both phones ready.\nMatch started.\nP1 serving.");
             UpdateHud();
         }
 
@@ -174,19 +194,53 @@ namespace CourtSmasherz
                 playerTwoScore++;
             }
 
-            SetStatus($"P{playerIndex + 1} scores");
+            servingPlayerIndex = playerIndex;
+
+            SetStatus($"P{playerIndex + 1} scores and continues serving");
+
             if (HasWinner(playerIndex))
             {
                 CurrentPhase = GamePhase.Finished;
                 SetInputLocked(true);
-                SetStatus($"P{playerIndex + 1} wins. Press R to restart.");
+                SetStatus($"P{playerIndex + 1} wins.\nPress R to restart.");
             }
             else
             {
                 if (ballController != null)
                 {
-                    ballController.ResetBall(playerIndex == 0 ? 1 : -1, true);   
+                    RespawnPlayersForServe();
+                    ballController.SpawnForServe(servingPlayerIndex);
                 }
+            }
+
+            UpdateHud();
+        }
+
+        private void SideOutToPlayer(int newServerIndex)
+        {
+            servingPlayerIndex = newServerIndex;
+
+            SetStatus($"Side out. P{newServerIndex + 1} now serves");
+
+            if (ballController != null)
+            {
+                RespawnPlayersForServe();
+                ballController.SpawnForServe(servingPlayerIndex);
+            }
+
+            UpdateHud();
+        }
+
+        private void RespawnPlayersForServe()
+        {
+            if (playerOneController != null)
+            {
+                playerOneController.RespawnAt(new Vector3(-6f, 0f, 0f));
+            }
+
+            if (playerTwoController != null)
+            {
+                playerTwoController.RespawnAt(new Vector3(6f, 0f, 0f));
             }
         }
 

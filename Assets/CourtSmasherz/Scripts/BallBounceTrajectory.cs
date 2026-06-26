@@ -101,4 +101,21 @@ public class BallBounceTrajectory : MonoBehaviour
     {
         return float.IsFinite(point.x) && float.IsFinite(point.y) && float.IsFinite(point.z);
     }
+
+    public void ClearPrediction()
+    {
+        bounceCount = 0;
+        CanDraw = false;
+        IsHit = false;
+
+        if (BallPredictedPoints != null)
+        {
+            BallPredictedPoints.Clear();
+        }
+
+        if (lineRenderer != null)
+        {
+            lineRenderer.positionCount = 0;
+        }
+    }
 }

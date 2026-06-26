@@ -14,8 +14,8 @@ namespace CourtSmasherz
         public float predictedPointTolerance = 0.2f;
         public float maxBallHittableHeight = 2.0f;
         public float minBallHittableHeight  = 0.1f;
-        public float minZ = -4.4f;
-        public float maxZ = 4.4f;
+        public float minZ = -4.0f;
+        public float maxZ = 4.0f;
         public float minX = -6.6f;
         public float maxX = 6.6f;
 
@@ -92,10 +92,10 @@ namespace CourtSmasherz
                 Vector3 predictedPoint = trajectory.BallPredictedPoints[i];
 
                 // Check side first
-                if (playerIndex == 0 && predictedPoint.x >= -2.57f)
+                if (playerIndex == 0 && predictedPoint.x >= -4.5f)
                 {
                     continue;
-                } else if (playerIndex == 1 && predictedPoint.x <= 2.57f)
+                } else if (playerIndex == 1 && predictedPoint.x <= 4.5f)
                 {
                     continue;
                 }
@@ -125,6 +125,12 @@ namespace CourtSmasherz
             return ballHeight < maxBallHittableHeight && ballHeight > minBallHittableHeight;
         }
 
-        // private void MoveToBall()
+        public void RespawnAt(Vector3 respawnPosition)
+        {
+            transform.position = respawnPosition;
+            targetPos = respawnPosition;
+
+            trajectory.ClearPrediction();
+        }
     }
 }
