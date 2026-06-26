@@ -50,7 +50,7 @@ namespace CourtSmasherz
 
         private void Update()
         {
-            UpdateBallDebugControls();
+            // UpdateBallDebugControls();
         }
 
         private void FixedUpdate()
