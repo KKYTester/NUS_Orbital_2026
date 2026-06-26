@@ -2502,7 +2502,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &559302437
 Transform:
   m_ObjectHideFlags: 0
@@ -5326,6 +5326,8 @@ MonoBehaviour:
   statusText: {fileID: 1548118893}
   bridge: {fileID: 1583913855}
   ballController: {fileID: 405539398}
+  playerOneController: {fileID: 1753861488}
+  playerTwoController: {fileID: 234881477}
   matchPoint: 7
   enableKeyboardTestShots: 0
 --- !u!114 &1583913857

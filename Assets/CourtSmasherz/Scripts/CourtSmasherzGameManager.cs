@@ -21,6 +21,8 @@ namespace CourtSmasherz
         public Text statusText;
         public PhoneMotionHttpBridge bridge;
         public PickleballBallController ballController;
+        public PickleballPlayerController playerOneController;
+        public PickleballPlayerController playerTwoController;
 
         [Header("Gameplay")]
         public int matchPoint = 7;
@@ -113,6 +115,7 @@ namespace CourtSmasherz
 
             if (ballController != null)
             {
+                RespawnPlayersForServe();
                 ballController.SpawnForServe(servingPlayerIndex);
             }
 
@@ -131,6 +134,7 @@ namespace CourtSmasherz
             SetInputLocked(true);
             if (ballController != null)
             {
+                RespawnPlayersForServe();
                 ballController.SpawnForServe(0);
             }
             SetStatus("");
@@ -143,6 +147,7 @@ namespace CourtSmasherz
             SetInputLocked(true);
             if (ballController != null)
             {
+                RespawnPlayersForServe();
                 ballController.SpawnForServe(0);
             }
             SetStatus("");
@@ -165,6 +170,7 @@ namespace CourtSmasherz
 
             if (ballController != null)
             {
+                RespawnPlayersForServe();
                 ballController.SpawnForServe(servingPlayerIndex);
             }
 
@@ -202,6 +208,7 @@ namespace CourtSmasherz
             {
                 if (ballController != null)
                 {
+                    RespawnPlayersForServe();
                     ballController.SpawnForServe(servingPlayerIndex);
                 }
             }
@@ -217,10 +224,24 @@ namespace CourtSmasherz
 
             if (ballController != null)
             {
+                RespawnPlayersForServe();
                 ballController.SpawnForServe(servingPlayerIndex);
             }
 
             UpdateHud();
+        }
+
+        private void RespawnPlayersForServe()
+        {
+            if (playerOneController != null)
+            {
+                playerOneController.RespawnAt(new Vector3(-6f, 0f, 0f));
+            }
+
+            if (playerTwoController != null)
+            {
+                playerTwoController.RespawnAt(new Vector3(6f, 0f, 0f));
+            }
         }
 
         private bool HasWinner(int lastScorer)

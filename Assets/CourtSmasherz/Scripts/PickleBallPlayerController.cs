@@ -125,6 +125,12 @@ namespace CourtSmasherz
             return ballHeight < maxBallHittableHeight && ballHeight > minBallHittableHeight;
         }
 
-        // private void MoveToBall()
+        public void RespawnAt(Vector3 respawnPosition)
+        {
+            transform.position = respawnPosition;
+            targetPos = respawnPosition;
+
+            trajectory.ClearPrediction();
+        }
     }
 }
