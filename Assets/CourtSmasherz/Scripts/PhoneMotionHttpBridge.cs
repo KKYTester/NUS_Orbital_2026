@@ -385,26 +385,39 @@ namespace CourtSmasherz
                     continue;
                 }
 
-                if (readinessCheckActive && string.Equals(unityEvent.source, "motion", StringComparison.OrdinalIgnoreCase))
+                bool isManualFallback = string.Equals(unityEvent.source, "manual", StringComparison.OrdinalIgnoreCase);
+                bool isMotionSwing = string.Equals(unityEvent.source, "motion", StringComparison.OrdinalIgnoreCase);
+
+                if (readinessCheckActive && (isMotionSwing || isManualFallback))
                 {
                     MarkPlayerReady(playerIndex);
-                    SetBridgeStatus($"Ready swing from P{playerIndex + 1}");
+                    SetBridgeStatus($"Ready input from P{playerIndex + 1}");
                     continue;
                 }
-
                 if (!gameManager.IsPlaying)
                 {
                     continue;
                 }
 
-                gameManager.ApplyShot(new ShotEvent(
+                ShotType shotType = ParseShotType(unityEvent.shotType);
+                ShotEvent shot = new ShotEvent(
                     playerIndex,
-                    ParseShotType(unityEvent.shotType),
+                    shotType,
                     unityEvent.power,
                     unityEvent.direction,
                     unityEvent.spin
-                ));
-                SetPlayerMotionStatus(playerIndex, $"Motion swing detected: {ParseShotType(unityEvent.shotType)}", true);
+                );
+
+                if (isManualFallback)
+                {
+                    gameManager.ApplyFallbackShot(shot);
+                    SetPlayerMotionStatus(playerIndex, $"Manual fallback detected: {shotType}", true);
+                }
+                else
+                {
+                    gameManager.ApplyShot(shot);
+                    SetPlayerMotionStatus(playerIndex, $"Motion swing detected: {shotType}", true);
+                }
             }
         }
 

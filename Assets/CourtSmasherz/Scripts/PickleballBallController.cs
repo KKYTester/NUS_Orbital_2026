@@ -75,6 +75,11 @@ namespace CourtSmasherz
             OnStatusChanged?.Invoke($"P{serverIndex + 1} serving");
         }
 
+        public bool CanFallbackServe(int playerIndex)
+        {
+            return !rallyEnded && lastHitterIndex < 0 && servingPlayerIndex == playerIndex;
+        }
+
         public void RegisterHit(int hitterIndex)
         {
             if (rallyEnded)

@@ -35,6 +35,7 @@ namespace CourtSmasherz
         private int servingPlayerIndex = 0;
         private const float ServeResetDelaySeconds = 2f;
         private Coroutine serveResetRoutine;
+        private global::RacketForceApplier[] racketForceAppliers;
 
         public GamePhase CurrentPhase { get; private set; } = GamePhase.Menu;
         public bool IsPlaying => CurrentPhase == GamePhase.Playing;
@@ -105,6 +106,47 @@ namespace CourtSmasherz
             {
                 return;
             }
+        }
+
+        public void ApplyFallbackShot(ShotEvent shot)
+        {
+            if (inputLocked || CurrentPhase != GamePhase.Playing)
+            {
+                return;
+            }
+
+            global::RacketForceApplier racketForceApplier = FindRacketForceApplier(shot.PlayerIndex);
+            if (racketForceApplier != null)
+            {
+                racketForceApplier.SimulateShot(shot);
+            }
+        }
+
+        private global::RacketForceApplier FindRacketForceApplier(int playerIndex)
+        {
+            if (racketForceAppliers == null || racketForceAppliers.Length == 0)
+            {
+                racketForceAppliers = FindObjectsByType<global::RacketForceApplier>(FindObjectsSortMode.None);
+            }
+
+            for (int i = 0; i < racketForceAppliers.Length; i++)
+            {
+                if (racketForceAppliers[i] != null && racketForceAppliers[i].playerIndex == playerIndex)
+                {
+                    return racketForceAppliers[i];
+                }
+            }
+
+            racketForceAppliers = FindObjectsByType<global::RacketForceApplier>(FindObjectsSortMode.None);
+            for (int i = 0; i < racketForceAppliers.Length; i++)
+            {
+                if (racketForceAppliers[i] != null && racketForceAppliers[i].playerIndex == playerIndex)
+                {
+                    return racketForceAppliers[i];
+                }
+            }
+
+            return null;
         }
 
         public void ResetMatch()

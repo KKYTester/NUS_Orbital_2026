@@ -163,6 +163,116 @@ public class RacketForceApplier : MonoBehaviour
         isHitAlready = true; // Prevent double hits while ball hasnt exited collider
     }
 
+    public bool SimulateShot(ShotEvent shot)
+    {
+        if (ball == null || frontDelimiter == null || backDelimiter == null)
+        {
+            return false;
+        }
+
+        Rigidbody ballRb = ball.GetComponent<Rigidbody>();
+        if (ballRb == null)
+        {
+            return false;
+        }
+
+        if (boxSizeX <= 0f)
+        {
+            BoxCollider hitBox = GetComponent<BoxCollider>();
+            if (hitBox == null)
+            {
+                return false;
+            }
+
+            hitBox.isTrigger = true;
+            boxSizeX = hitBox.size.x;
+        }
+
+        bool isService = ball.CanFallbackServe(playerIndex);
+        if (!isService && !CanSimulateFallbackShot())
+        {
+            return false;
+        }
+
+        float power = Mathf.Clamp01(shot.Power <= 0f ? 0.75f : shot.Power);
+        float strength = Mathf.Lerp(minPhoneAcceleration + 0.5f, 12f, power);
+        float ratio = GetManualHitRatio(shot);
+        float shotYaw;
+        if (shotYawDecider(ratio, out shotYaw) == false)
+        {
+            return false;
+        }
+
+        if (shot.ShotType == ShotType.Backhand)
+        {
+            shotYaw *= -1f;
+        }
+
+        if (shot.ShotType == ShotType.Lob)
+        {
+            strength *= 0.85f;
+        }
+        else if (shot.ShotType == ShotType.Smash)
+        {
+            strength *= 1.25f;
+        }
+
+        if (isService)
+        {
+            Vector3 contactPosition = transform.position + transform.forward * (boxSizeX * 0.25f);
+            contactPosition.y = Mathf.Max(ball.transform.position.y, ball.ballRadius + 0.35f);
+            ball.transform.position = contactPosition;
+        }
+
+        Vector3 shotVector = Quaternion.AngleAxis(shotYaw, Vector3.up) * transform.forward;
+        Vector3 currPos = transform.position;
+        float distance = getDistance(shotVector, currPos, strength, frontDelimiter.position.x, backDelimiter.position.x);
+        ballDestination = shotVector * distance;
+        ballDestination.x += currPos.x;
+        ballDestination.z += currPos.z;
+        ballDestination.y = ball.ballRadius;
+
+        float flightTime = shot.ShotType == ShotType.Lob ? 1.65f : shot.ShotType == ShotType.Smash ? 0.75f : 1.2f;
+        ballRb.isKinematic = false;
+        ballRb.linearVelocity = CalculateVelocityToTarget(ball.transform.position, ballDestination, flightTime, ball.gravity);
+        ballRb.angularVelocity = new Vector3(shot.Spin * 12f, shot.Direction * 10f, -shot.Spin * 18f);
+
+        ball.RegisterHit(playerIndex);
+
+        if (destinationVisualiser != null)
+        {
+            destinationVisualiser.position = new Vector3(ball.transform.position.x, 0, ball.transform.position.z);
+        }
+
+        isHitAlready = true;
+        return true;
+    }
+
+    private bool CanSimulateFallbackShot()
+    {
+        BoxCollider hitBox = GetComponent<BoxCollider>();
+        if (hitBox == null)
+        {
+            return false;
+        }
+
+        Bounds fallbackWindow = hitBox.bounds;
+        float reachPadding = Mathf.Max(ball.ballRadius * 2f, 0.25f);
+        fallbackWindow.Expand(new Vector3(reachPadding, reachPadding, reachPadding));
+        return fallbackWindow.Contains(ball.transform.position);
+    }
+
+    private float GetManualHitRatio(ShotEvent shot)
+    {
+        float manualDirection = Mathf.Clamp(shot.Direction, -1f, 1f);
+        if (shot.ShotType == ShotType.Backhand)
+        {
+            manualDirection *= -1f;
+        }
+
+        return Mathf.Lerp(0.25f, 0.75f, (manualDirection + 1f) * 0.5f);
+    }
+
     private float map(float input, float inputMin, float inputMax, float outputMin, float outputMax)
     {
         input = Mathf.Clamp(input, inputMin, inputMax);
