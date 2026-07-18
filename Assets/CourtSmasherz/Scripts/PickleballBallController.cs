@@ -25,10 +25,10 @@ namespace CourtSmasherz
 
         [Header("Debug")]
         public Vector3 p1BallSpawnLocation =>
-            new Vector3(playerOneRacquet.position.x, playerOneRacquet.position.y + 1f, playerOneRacquet.position.z);
+            new Vector3(playerOneRacquet.position.x + 0.8f, playerOneRacquet.position.y + 1f, playerOneRacquet.position.z);
 
         public Vector3 p2BallSpawnLocation =>
-            new Vector3(playerTwoRacquet.position.x, playerTwoRacquet.position.y + 1f, playerTwoRacquet.position.z);
+            new Vector3(playerTwoRacquet.position.x - 0.8f, playerTwoRacquet.position.y + 1f, playerTwoRacquet.position.z);
 
         public Action<int> OnPointScored;
         public Action<int> OnSideOut;

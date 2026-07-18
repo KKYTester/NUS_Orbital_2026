@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
@@ -32,6 +33,8 @@ namespace CourtSmasherz
         private int playerTwoScore;
         private bool inputLocked = true;
         private int servingPlayerIndex = 0;
+        private const float ServeResetDelaySeconds = 2f;
+        private Coroutine serveResetRoutine;
 
         public GamePhase CurrentPhase { get; private set; } = GamePhase.Menu;
         public bool IsPlaying => CurrentPhase == GamePhase.Playing;
@@ -106,6 +109,7 @@ namespace CourtSmasherz
 
         public void ResetMatch()
         {
+            CancelServeResetDelay();
             playerOneScore = 0;
             playerTwoScore = 0;
             servingPlayerIndex = 0;
@@ -128,6 +132,7 @@ namespace CourtSmasherz
 
         public void ShowMenu()
         {
+            CancelServeResetDelay();
             playerOneScore = 0;
             playerTwoScore = 0;
             CurrentPhase = GamePhase.Menu;
@@ -143,6 +148,7 @@ namespace CourtSmasherz
 
         public void WaitForSwings()
         {
+            CancelServeResetDelay();
             CurrentPhase = GamePhase.WaitingForSwings;
             SetInputLocked(true);
             if (ballController != null)
@@ -156,6 +162,7 @@ namespace CourtSmasherz
 
         public void BeginMatch()
         {
+            CancelServeResetDelay();
             if (bridge != null)
             {
                 bridge.ResetRacquetNeutralRotations();
@@ -206,11 +213,7 @@ namespace CourtSmasherz
             }
             else
             {
-                if (ballController != null)
-                {
-                    RespawnPlayersForServe();
-                    ballController.SpawnForServe(servingPlayerIndex);
-                }
+                StartServeResetDelay();
             }
 
             UpdateHud();
@@ -221,6 +224,27 @@ namespace CourtSmasherz
             servingPlayerIndex = newServerIndex;
 
             SetStatus($"Side out. P{newServerIndex + 1} now serves");
+            StartServeResetDelay();
+
+            UpdateHud();
+        }
+
+        private void StartServeResetDelay()
+        {
+            SetInputLocked(true);
+            CancelServeResetDelay();
+            serveResetRoutine = StartCoroutine(ServeResetAfterDelay());
+        }
+
+        private IEnumerator ServeResetAfterDelay()
+        {
+            yield return new WaitForSeconds(ServeResetDelaySeconds);
+            serveResetRoutine = null;
+
+            if (CurrentPhase != GamePhase.Playing)
+            {
+                yield break;
+            }
 
             if (ballController != null)
             {
@@ -228,7 +252,19 @@ namespace CourtSmasherz
                 ballController.SpawnForServe(servingPlayerIndex);
             }
 
+            SetInputLocked(false);
             UpdateHud();
+        }
+
+        private void CancelServeResetDelay()
+        {
+            if (serveResetRoutine == null)
+            {
+                return;
+            }
+
+            StopCoroutine(serveResetRoutine);
+            serveResetRoutine = null;
         }
 
         private void RespawnPlayersForServe()
