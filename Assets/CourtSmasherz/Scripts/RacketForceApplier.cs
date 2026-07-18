@@ -264,13 +264,19 @@ public class RacketForceApplier : MonoBehaviour
 
     private float GetManualHitRatio(ShotEvent shot)
     {
-        float manualDirection = Mathf.Clamp(shot.Direction, -1f, 1f);
-        if (shot.ShotType == ShotType.Backhand)
-        {
-            manualDirection *= -1f;
-        }
+        float manualDirection = GetFallbackShotDirection(shot);
 
         return Mathf.Lerp(0.25f, 0.75f, (manualDirection + 1f) * 0.5f);
+    }
+
+    private float GetFallbackShotDirection(ShotEvent shot)
+    {
+        if (shot.ShotType == ShotType.Forehand || shot.ShotType == ShotType.Backhand)
+        {
+            return playerIndex == 0 ? -0.45f : 0.45f;
+        }
+
+        return Mathf.Clamp(shot.Direction, -1f, 1f);
     }
 
     private float map(float input, float inputMin, float inputMax, float outputMin, float outputMax)
