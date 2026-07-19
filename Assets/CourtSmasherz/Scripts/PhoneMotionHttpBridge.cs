@@ -34,7 +34,7 @@ namespace CourtSmasherz
         [Header("Unity Motion Classification")]
         public float accelerationShotThreshold = 15f;
         public float rotationShotThreshold = 150f;
-        public float smashAccelerationThreshold = 18f;
+        public float smashAccelerationThreshold = 15f;
         public float shotCooldownSeconds = 0.45f;
 
         private string roomCode;
@@ -473,13 +473,18 @@ namespace CourtSmasherz
             }
 
           ShotType shotType = acceleration.x >= 0f ? ShotType.Forehand : ShotType.Backhand;
-            if (accelerationMagnitude >= smashAccelerationThreshold && acceleration.z < -6f && orientation.x < 179 && orientation.x > 110)
+            if (accelerationMagnitude >= smashAccelerationThreshold && acceleration.z < 0f )
             {
                 shotType = ShotType.Smash;
             }
             else if (orientation.x > -5f && orientation.x < 70f  && acceleration.z > 5f)
             {
                 shotType = ShotType.Lob;
+            }
+
+            if (racquetController != null)
+            {
+                racquetController.SetDetectedShotType(shotType);
             }
 
             float power = Mathf.Clamp01((accelerationMagnitude - 7f) / 22f + rotationMagnitude / 520f);

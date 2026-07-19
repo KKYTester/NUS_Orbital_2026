@@ -5307,7 +5307,7 @@ MonoBehaviour:
   fallbackNodeExecutable: C:\Users\kumar\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe
   accelerationShotThreshold: 13
   rotationShotThreshold: 120
-  smashAccelerationThreshold: 24
+  smashAccelerationThreshold: 18
   shotCooldownSeconds: 0.45
 --- !u!114 &1583913856
 MonoBehaviour:

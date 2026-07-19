@@ -37,8 +37,10 @@ namespace CourtSmasherz
         public float phoneAccelerationMagnitude{ get; private set; }
         public Vector3 phoneAccelerationDirection{ get; private set;}
         public Vector2 phoneAccelerationPitchYaw{ get; private set;}
+        public ShotType DetectedShotType { get; private set; } = ShotType.Forehand;
 
         private const float irl_g = 9.81f; // in ms^-2
+        private float lastDetectedShotTypeTime = -10f;
 
         private void Awake()
         {
@@ -114,6 +116,17 @@ namespace CourtSmasherz
         {
             hasPhoneNeutralRotation = false;
             transform.localRotation = initialLocalRotation;
+        }
+
+        public void SetDetectedShotType(ShotType shotType)
+        {
+            DetectedShotType = shotType;
+            lastDetectedShotTypeTime = Time.time;
+        }
+
+        public bool HasRecentDetectedShotType(float maxAgeSeconds)
+        {
+            return Time.time - lastDetectedShotTypeTime <= maxAgeSeconds;
         }
 
         private Quaternion CreateRawPhoneRotation(

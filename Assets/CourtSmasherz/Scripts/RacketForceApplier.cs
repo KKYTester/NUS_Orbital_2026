@@ -35,6 +35,7 @@ public class RacketForceApplier : MonoBehaviour
 
     private float boxSizeX;
     private Vector3 backDelimitStartPos;
+    private const float DetectedShotTypeMaxAgeSeconds = 1.25f;
 
     private void Start()
     {
@@ -136,12 +137,15 @@ public class RacketForceApplier : MonoBehaviour
             return; // miss
         }   
 
-        if (strength < 0)
+        ShotType collisionShotType = GetPhysicalCollisionShotType(strength);
+
+        if (collisionShotType == ShotType.Backhand)
         {
             // Backhand, so reverse direction
             shotYaw *= -1;
-            strength *= -1; // Keep strength positive for force calculation later
         }
+
+        strength = Mathf.Abs(strength) * GetShotStrengthMultiplier(collisionShotType);
         Vector3 shotVector = Quaternion.AngleAxis(shotYaw, Vector3.up) * transform.forward;
         Vector3 currPos = transform.position;
         float distance = getDistance(shotVector, currPos, strength, frontDelimiter.position.x, backDelimiter.position.x);
@@ -153,7 +157,8 @@ public class RacketForceApplier : MonoBehaviour
         // add ball radius
         ballDestination.y = ball.ballRadius;
         
-        Vector3 velo = CalculateVelocityToTarget(other.transform.position, ballDestination, 1.2f, ball.gravity);
+        float flightTime = GetShotFlightTime(collisionShotType);
+        Vector3 velo = CalculateVelocityToTarget(other.transform.position, ballDestination, flightTime, ball.gravity);
         Rigidbody ballRb = other.GetComponent<Rigidbody>();
         ballRb.linearVelocity = velo;
 
@@ -208,14 +213,7 @@ public class RacketForceApplier : MonoBehaviour
             shotYaw *= -1f;
         }
 
-        if (shot.ShotType == ShotType.Lob)
-        {
-            strength *= 0.85f;
-        }
-        else if (shot.ShotType == ShotType.Smash)
-        {
-            strength *= 1.25f;
-        }
+        strength *= GetShotStrengthMultiplier(shot.ShotType);
 
         if (isService)
         {
@@ -232,7 +230,7 @@ public class RacketForceApplier : MonoBehaviour
         ballDestination.z += currPos.z;
         ballDestination.y = ball.ballRadius;
 
-        float flightTime = shot.ShotType == ShotType.Lob ? 1.65f : shot.ShotType == ShotType.Smash ? 0.75f : 1.2f;
+        float flightTime = GetShotFlightTime(shot.ShotType);
         ballRb.isKinematic = false;
         ballRb.linearVelocity = CalculateVelocityToTarget(ball.transform.position, ballDestination, flightTime, ball.gravity);
         ballRb.angularVelocity = new Vector3(shot.Spin * 12f, shot.Direction * 10f, -shot.Spin * 18f);
@@ -277,6 +275,46 @@ public class RacketForceApplier : MonoBehaviour
         }
 
         return Mathf.Clamp(shot.Direction, -1f, 1f);
+    }
+
+    private ShotType GetPhysicalCollisionShotType(float strength)
+    {
+        if (racket != null && racket.HasRecentDetectedShotType(DetectedShotTypeMaxAgeSeconds))
+        {
+            return racket.DetectedShotType;
+        }
+
+        return strength < 0f ? ShotType.Backhand : ShotType.Forehand;
+    }
+
+    private float GetShotStrengthMultiplier(ShotType shotType)
+    {
+        if (shotType == ShotType.Lob)
+        {
+            return 0.85f;
+        }
+
+        if (shotType == ShotType.Smash)
+        {
+            return 1.25f;
+        }
+
+        return 1f;
+    }
+
+    private float GetShotFlightTime(ShotType shotType)
+    {
+        if (shotType == ShotType.Lob)
+        {
+            return 1.65f;
+        }
+
+        if (shotType == ShotType.Smash)
+        {
+            return 0.75f;
+        }
+
+        return 1.2f;
     }
 
     private float map(float input, float inputMin, float inputMax, float outputMin, float outputMax)
