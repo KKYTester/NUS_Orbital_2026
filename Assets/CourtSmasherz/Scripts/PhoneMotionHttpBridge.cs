@@ -34,7 +34,7 @@ namespace CourtSmasherz
         [Header("Unity Motion Classification")]
         public float accelerationShotThreshold = 15f;
         public float rotationShotThreshold = 150f;
-        public float smashAccelerationThreshold = 15f;
+        public float smashAccelerationThreshold = 18f;
         public float shotCooldownSeconds = 0.45f;
 
         private string roomCode;
