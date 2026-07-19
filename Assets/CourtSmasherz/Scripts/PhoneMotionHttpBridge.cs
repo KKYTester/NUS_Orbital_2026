@@ -32,9 +32,9 @@ namespace CourtSmasherz
         public string fallbackNodeExecutable = @"C:\Users\kumar\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe";
 
         [Header("Unity Motion Classification")]
-        public float accelerationShotThreshold = 13f;
-        public float rotationShotThreshold = 120f;
-        public float smashAccelerationThreshold = 24f;
+        public float accelerationShotThreshold = 15f;
+        public float rotationShotThreshold = 150f;
+        public float smashAccelerationThreshold = 18f;
         public float shotCooldownSeconds = 0.45f;
 
         private string roomCode;
@@ -472,12 +472,12 @@ namespace CourtSmasherz
                 return;
             }
 
-            ShotType shotType = acceleration.x >= 0f ? ShotType.Forehand : ShotType.Backhand;
-            if (accelerationMagnitude >= smashAccelerationThreshold && acceleration.z < -6f)
+          ShotType shotType = acceleration.x >= 0f ? ShotType.Forehand : ShotType.Backhand;
+            if (accelerationMagnitude >= smashAccelerationThreshold && acceleration.z < -6f && orientation.x < 179 && orientation.x > 110)
             {
                 shotType = ShotType.Smash;
             }
-            else if (orientation.x < -18f && acceleration.z > 3f)
+            else if (orientation.x > -5f && orientation.x < 70f  && acceleration.z > 5f)
             {
                 shotType = ShotType.Lob;
             }
