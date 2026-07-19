@@ -5305,9 +5305,9 @@ MonoBehaviour:
   autoStartLocalServer: 0
   nodeExecutable: node
   fallbackNodeExecutable: C:\Users\kumar\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe
-  accelerationShotThreshold: 15
+  accelerationShotThreshold: 18
   rotationShotThreshold: 120
-  smashAccelerationThreshold: 18
+  smashAccelerationThreshold: 22
   shotCooldownSeconds: 0.45
 --- !u!114 &1583913856
 MonoBehaviour:

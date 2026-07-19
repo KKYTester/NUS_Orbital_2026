@@ -32,9 +32,9 @@ namespace CourtSmasherz
         public string fallbackNodeExecutable = @"C:\Users\kumar\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe";
 
         [Header("Unity Motion Classification")]
-        public float accelerationShotThreshold = 15f;
+        public float accelerationShotThreshold = 18f;
         public float rotationShotThreshold = 150f;
-        public float smashAccelerationThreshold = 18f;
+        public float smashAccelerationThreshold = 22f;
         public float shotCooldownSeconds = 0.45f;
 
         private string roomCode;
