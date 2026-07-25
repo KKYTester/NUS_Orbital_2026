@@ -10,6 +10,7 @@ namespace CourtSmasherz
         public Transform playerOneRacquet;
         public Transform playerTwoRacquet;
         public CourtSmasherzGameManager gameManger;
+        [SerializeField] TrailRenderer ballTrail;
 
         [Header("Court Settings")]
         public float netX = 0f;
@@ -67,7 +68,20 @@ namespace CourtSmasherz
             bounceCountAfterHit = 0;
             lastBounceTime = -999f;
 
+            // Disable trail before teleporting ball
+            if (ballTrail != null)
+            {
+                ballTrail.emitting = false;
+                ballTrail.Clear();
+            }
+
             transform.position = serverIndex == 0 ? p1BallSpawnLocation : p2BallSpawnLocation;
+
+            if (ballTrail != null)
+            {
+                ballTrail.Clear();
+                ballTrail.emitting = true;
+            }
 
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
