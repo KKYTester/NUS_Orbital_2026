@@ -174,6 +174,11 @@ public class RacketForceApplier : MonoBehaviour
         {
             return false;
         }
+        if (racket != null)
+        {
+            // Ensure fallback manual buttons also set the shot type
+            racket.SetDetectedShotType(shot.ShotType);
+        }
 
         Rigidbody ballRb = ball.GetComponent<Rigidbody>();
         if (ballRb == null)
