@@ -4149,7 +4149,7 @@ MonoBehaviour:
   direction: {x: 0, y: 0, z: 0}
   yMulti: 1
   zMulti: 1
-  minPhoneAcceleration: 3
+  minPhoneAcceleration: 5
   racket: {fileID: 1995823892}
   ball: {fileID: 405539398}
   destinationVisualiser: {fileID: 1613787667}
@@ -5402,7 +5402,7 @@ MonoBehaviour:
   direction: {x: 0, y: 0, z: 0}
   yMulti: 1
   zMulti: 1
-  minPhoneAcceleration: 3
+  minPhoneAcceleration: 5
   racket: {fileID: 260991437}
   ball: {fileID: 405539398}
   destinationVisualiser: {fileID: 1757490130}
